@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-12">
+        <div class="card p-4">
+            <h2 class="mb-4 text-center">
+                <i class="bi bi-speedometer2 text-primary me-2"></i>Relatório de Quilometragem
+            </h2>
+            
+            <form action="{{ url_for('relatorio_km') }}" method="GET" class="mb-4">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label for="mes_ano_inicio" class="form-label">Mês/Ano de Início:</label>
+                        <input type="month" class="form-control" id="mes_ano_inicio" name="mes_ano_inicio" value="{{ request.args.get('mes_ano_inicio', '') }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="mes_ano_fim" class="form-label">Mês/Ano de Fim:</label>
+                        <input type="month" class="form-control" id="mes_ano_fim" name="mes_ano_fim" value="{{ request.args.get('mes_ano_fim', '') }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="veiculo_id" class="form-label">Veículo:</label>
+                        <select id="veiculo_id" name="veiculo_id" class="form-select">
+                            <option value="">Selecione o Veículo</option>
+                            {% for veiculo in veiculos %}
+                            <option value="{{ veiculo.id }}" {% if request.args.get('veiculo_id') and request.args.get('veiculo_id')|int == veiculo.id %}selected{% endif %}>
+                                {{ veiculo.placa }} - {{ veiculo.marca_modelo }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="usuario_id" class="form-label">Usuário:</label>
+                        <select id="usuario_id" name="usuario_id" class="form-select">
+                            <option value="">Todos os Usuários</option>
+                            {% for usuario in usuarios %}
+                            <option value="{{ usuario.id }}" {% if request.args.get('usuario_id') and request.args.get('usuario_id')|int == usuario.id %}selected{% endif %}>
+                                {{ usuario.nome }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-12 mt-3 text-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search"></i> Gerar Relatório
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            {% if report_data %}
+                <h4 class="mt-4">Relatório de Quilometragem</h4>
+                {% if report_data.veiculo_selecionado %}
+                    <p><strong>Veículo:</strong> {{ report_data.veiculo_selecionado.placa }} ({{ report_data.veiculo_selecionado.marca_modelo }})</p>
+                {% endif %}
+                {% if report_data.usuario_selecionado %}
+                    <p><strong>Usuário:</strong> {{ report_data.usuario_selecionado.nome }}</p>
+                {% endif %}
+                <p><strong>Período:</strong> {{ report_data.data_inicio if report_data.data_inicio else '-' }} a {{ report_data.data_fim if report_data.data_fim else '-' }}</p>
+                
+                <div class="row mt-3">
+                    <div class="col-md-4">
+                        <p><strong>KM Inicial do Carro:</strong> {{ report_data.km_inicial_carro }} km</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p><strong>Leitura Atual:</strong> {{ report_data.leitura_atual }} km</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p><strong>KM Total Rodado no Período:</strong> {{ report_data.km_total_rodado_periodo }} km</p>
+                    </div>
+                </div>
+
+                <h5 class="mt-4">KM rodado por motorista no período</h5>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover table-sm">
+                        <thead>
+                            <tr>
+                                <th>Motorista</th>
+                                <th>KM Rodado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for motorista, km in report_data.km_por_motorista %}
+                                <tr>
+                                    <td>{{ motorista }}</td>
+                                    <td>{{ km }} km</td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="2" class="text-center">Nenhum KM registrado para este período.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+            {% else %}
+                <div class="alert alert-info text-center mt-4" role="alert">
+                    Selecione um veículo e/ou um usuário e um período para gerar o relatório.
+                </div>
+            {% endif %}
+
+            <a href="{{ url_for('index') }}" class="btn btn-secondary mt-3">
+                <i class="bi bi-arrow-left-circle"></i> Voltar
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

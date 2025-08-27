@@ -42,6 +42,15 @@
     </div>
 
     <div class="col">
+        <a href="{{ url_for('controle_utilizacao') }}" class="text-decoration-none text-dark">
+            <div class="card h-100 text-center p-3">
+                <i class="bi bi-list-task fs-1 mb-2 text-info"></i>
+                <h5>Controle de Utilização</h5>
+            </div>
+        </a>
+    </div>
+
+    <div class="col">
         <a href="{{ url_for('cadastro_multa') }}" class="text-decoration-none text-dark">
             <div class="card h-100 text-center p-3">
                 <i class="bi bi-exclamation-triangle-fill fs-1 mb-2 text-danger"></i>
@@ -51,13 +60,21 @@
     </div>
 
     <div class="col">
-        <a href="{{ url_for('relatorios') }}" class="text-decoration-none text-dark">
+        <a href="{{ url_for('relatorio_multas') }}" class="text-decoration-none text-dark">
             <div class="card h-100 text-center p-3">
-                <i class="bi bi-bar-chart-fill fs-1 mb-2 text-info"></i>
-                <h5>Relatórios</h5>
+                <i class="bi bi-file-earmark-bar-graph-fill fs-1 mb-2 text-danger"></i>
+                <h5>Relatório de Multas</h5>
             </div>
         </a>
     </div>
 
+    <div class="col">
+        <a href="{{ url_for('relatorio_km') }}" class="text-decoration-none text-dark">
+            <div class="card h-100 text-center p-3">
+                <i class="bi bi-file-earmark-bar-graph-fill fs-1 mb-2 text-primary"></i>
+                <h5>Relatório de KM</h5>
+            </div>
+        </a>
+    </div>
 </div>
 {% endblock %}

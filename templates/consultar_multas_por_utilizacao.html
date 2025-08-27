@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-12">
+        <div class="card p-4">
+            <h2 class="mb-4 text-center">
+                <i class="bi bi-search text-danger me-2"></i>Multas para {{ utilizacao.usuario.nome }} ({{ utilizacao.veiculo.placa }})
+            </h2>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'success' if category == 'message' else category }}" role="alert">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="table-responsive">
+                <table class="table table-striped table-hover table-sm">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Infração</th>
+                            <th>Valor</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if multas %}
+                            {% for multa in multas %}
+                            <tr>
+                                <td>{{ multa.data_infracao.strftime('%d/%m/%Y') if multa.data_infracao else '-' }}</td>
+                                <td>{{ multa.infracao }}</td>
+                                <td>R$ {{ "%.2f"|format(multa.valor_termo_desc) if multa.valor_termo_desc else '-' }}</td>
+                                <td>
+                                    <a href="{{ url_for('editar_multa', id=multa.id) }}" class="btn btn-sm btn-warning">
+                                        <i class="bi bi-pencil"></i> Editar
+                                    </a>
+                                    <form action="{{ url_for('excluir_multa', id=multa.id) }}" method="POST" style="display:inline;">
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir esta multa?')">
+                                            <i class="bi bi-trash"></i> Excluir
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center">Nenhuma multa encontrada para este registro.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+
+            <a href="{{ url_for('controle_utilizacao') }}" class="btn btn-secondary mt-3">
+                <i class="bi bi-arrow-left-circle"></i> Voltar
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

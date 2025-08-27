@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card p-4">
+            <h2 class="mb-4 text-center">
+                <i class="bi bi-check-circle text-info me-2"></i>Devolução de Veículo
+            </h2>
+
+            <form method="POST" id="devolucao-form">
+                <div class="mb-3">
+                    <label class="form-label">Veículo:</label>
+                    <input type="text" class="form-control" value="{{ utilizacao.veiculo.marca_modelo }} - {{ utilizacao.veiculo.placa }}" disabled>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Usuário:</label>
+                    <input type="text" class="form-control" value="{{ utilizacao.usuario.nome }}" disabled>
+                </div>
+
+                <div class="mb-3">
+                    <label for="data_devolucao" class="form-label">Data de Devolução:</label>
+                    <input type="date" id="data_devolucao" name="data_devolucao" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="km_devolucao" class="form-label">KM de Devolução:</label>
+                    <input type="number" id="km_devolucao" name="km_devolucao" class="form-control" required>
+                </div>
+                <input type="hidden" id="km_minimo" value="{{ km_minimo }}">
+
+                <div class="d-flex justify-content-between">
+                    <a href="{{ url_for('controle_utilizacao') }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left-circle"></i> Voltar
+                    </a>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-save-fill"></i> Registrar Devolução
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('devolucao-form').addEventListener('submit', function(event) {
+        const dataDevolucao = new Date(document.getElementById('data_devolucao').value);
+        const dataAtual = new Date();
+        dataAtual.setHours(0, 0, 0, 0);
+
+        if (dataDevolucao > dataAtual) {
+            alert('A data de devolução não pode ser uma data futura.');
+            event.preventDefault();
+            return;
+        }
+
+        const kmDevolucao = parseInt(document.getElementById('km_devolucao').value);
+        const kmMinimo = parseInt(document.getElementById('km_minimo').value);
+
+        if (kmDevolucao < kmMinimo) {
+            alert('O KM de devolução não pode ser menor que o último KM registrado (' + kmMinimo + ').');
+            event.preventDefault();
+            return;
+        }
+    });
+</script>
+{% endblock %}

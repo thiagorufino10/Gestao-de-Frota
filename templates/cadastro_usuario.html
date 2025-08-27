@@ -7,31 +7,31 @@
             <h2 class="mb-4 text-center">
                 <i class="bi bi-person-plus-fill text-primary me-2"></i>Cadastro de Usuário
             </h2>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'success' if category == 'message' else category }}" role="alert">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
 
             <form method="POST">
                 <div class="mb-3">
-                    <label class="form-label">Nome:</label>
-                    <input type="text" name="nome" required class="form-control" placeholder="Ex: João Silva">
+                    <label for="nome" class="form-label">Nome:</label>
+                    <input type="text" id="nome" name="nome" required class="form-control" placeholder="Ex: João Silva">
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Cargo:</label>
-                    <input type="text" name="cargo" required class="form-control" placeholder="Ex: Motorista">
+                    <label for="cargo" class="form-label">Cargo:</label>
+                    <input type="text" id="cargo" name="cargo" required class="form-control" placeholder="Ex: Motorista">
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Setor:</label>
-                    <input type="text" name="setor" required class="form-control" placeholder="Ex: Operacional">
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Empresa:</label>
-                    <select name="empresa_id" class="form-control" required>
-                        <option value="">Selecione a empresa</option>
-                        {% for empresa in empresas %}
-                            <option value="{{ empresa.id }}">{{ empresa.nome }}</option>
-                        {% endfor %}
-                    </select>
+                    <label for="setor" class="form-label">Setor:</label>
+                    <input type="text" id="setor" name="setor" required class="form-control" placeholder="Ex: Operacional">
                 </div>
 
                 <div class="d-flex justify-content-between">
@@ -43,6 +43,39 @@
                     </button>
                 </div>
             </form>
+            
+            <hr class="my-4">
+
+            <h4 class="mb-3">Usuários Cadastrados</h4>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover table-sm">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Cargo</th>
+                            <th>Setor</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for usuario in usuarios %}
+                        <tr>
+                            <td>{{ usuario.nome }}</td>
+                            <td>{{ usuario.cargo }}</td>
+                            <td>{{ usuario.setor }}</td>
+                            <td>
+                                <form action="{{ url_for('excluir_usuario', id=usuario.id) }}" method="POST" style="display:inline;">
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir este usuário? Todos os registros atrelados a ele serão perdidos.')">
+                                        <i class="bi bi-trash"></i> Excluir
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
         </div>
     </div>
 </div>

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card p-4">
+            <h2 class="mb-4 text-center">
+                Multas de {{ usuario.nome }}
+            </h2>
+
+            {% if multas %}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Placa</th>
+                        <th>Infração</th>
+                        <th>Data</th>
+                        <th>Valor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for multa in multas %}
+                    <tr>
+                        <td>{{ multa.placa }}</td>
+                        <td>{{ multa.infracao }}</td>
+                        <td>{{ multa.data_infracao.strftime('%d/%m/%Y') }}</td>
+                        <td>R$ {{ multa.valor_termo_desc | string | replace('.', ',') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="alert alert-info text-center" role="alert">
+                Nenhuma multa encontrada para este condutor.
+            </div>
+            {% endif %}
+
+            <div class="text-center mt-4">
+                <a href="{{ url_for('cadastro_multa') }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left-circle"></i> Voltar
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

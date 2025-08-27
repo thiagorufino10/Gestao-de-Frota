@@ -2,64 +2,198 @@
 
 {% block content %}
 <div class="row justify-content-center">
-  <div class="col-md-10">
-    <div class="card p-4">
-      <h2 class="mb-4 text-center">
-        <i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>Registro de Multas
-      </h2>
+    <div class="col-md-10">
+        <div class="card p-4">
+            <h2 class="mb-4 text-center">
+                <i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>Gerenciamento de Multas
+            </h2>
 
-      <form method="POST">
-        <div class="mb-3">
-          <label class="form-label">Veículo:</label>
-          <select name="veiculo_id" class="form-control" required>
-            {% for veiculo in veiculos %}
-              <option value="{{ veiculo.id }}">{{ veiculo.marca_modelo }} - {{ veiculo.placa }}</option>
-            {% endfor %}
-          </select>
-        </div>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'success' if category == 'message' else category }}" role="alert">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
 
-        <div class="mb-3">
-          <label class="form-label">Usuário:</label>
-          <select name="usuario_id" class="form-control" required>
-            {% for usuario in usuarios %}
-              <option value="{{ usuario.id }}">{{ usuario.nome }}</option>
-            {% endfor %}
-          </select>
-        </div>
+            <h4 class="mb-3">
+                <i class="bi bi-search me-2"></i>Consultar Multas por Condutor
+            </h4>
+            <div class="mb-4">
+                <form id="form-consulta-multa">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <label for="condutor_consulta" class="form-label">Condutor:</label>
+                            <select id="condutor_consulta" name="usuario_id" class="form-select">
+                                <option value="" disabled selected>Selecione o Condutor</option>
+                                {% for usuario in usuarios %}
+                                <option value="{{ usuario.id }}">{{ usuario.nome }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-search"></i> Consultar Multas
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
 
-        <div class="mb-3">
-          <label class="form-label">Data:</label>
-          <input type="date" name="data" class="form-control" required>
-        </div>
+            <hr class="my-4">
 
-        <div class="mb-3">
-          <label class="form-label">Tipo de Infração:</label>
-          <input type="text" name="tipo" class="form-control" required placeholder="Ex: Excesso de velocidade">
-        </div>
+            <h4 class="mb-3">
+                <i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>Registrar Nova Multa
+            </h4>
+            <form method="POST">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="usuario_id" class="form-label">Condutor:</label>
+                        <select id="usuario_id" name="usuario_id" class="form-select" required>
+                            <option value="" disabled selected>Selecione o Condutor</option>
+                            {% for usuario in usuarios %}
+                            <option value="{{ usuario.id }}" data-setor="{{ usuario.setor }}">{{ usuario.nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
 
-        <div class="mb-3">
-          <label class="form-label">Valor:</label>
-          <input type="number" name="valor" step="0.01" class="form-control" required placeholder="Ex: 250.00">
-        </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="centro_custo" class="form-label">Centro de Custo:</label>
+                        <input type="text" id="centro_custo" name="centro_custo" class="form-control" required readonly>
+                    </div>
 
-        <div class="mb-3">
-          <label class="form-label">Status:</label>
-          <select name="status" class="form-control" required>
-            <option value="aberta">Aberta</option>
-            <option value="paga">Paga</option>
-          </select>
-        </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="unidade" class="form-label">Unidade:</label>
+                        <select id="unidade" name="unidade" class="form-select" required>
+                            <option value="" disabled selected>Selecione a Unidade</option>
+                            <option value="Matriz">Matriz</option>
+                            <option value="Bahia">Bahia</option>
+                            <option value="Fortaleza">Fortaleza</option>
+                            <option value="Paraíba">Paraíba</option>
+                            <option value="Teresina">Teresina</option>
+                        </select>
+                    </div>
 
-        <div class="d-flex justify-content-between">
-          <a href="{{ url_for('index') }}" class="btn btn-secondary">
-            <i class="bi bi-arrow-left-circle"></i> Voltar
-          </a>
-          <button type="submit" class="btn btn-primary">
-            <i class="bi bi-save-fill"></i> Registrar
-          </button>
+                    <div class="col-md-6 mb-3">
+                        <label for="modalidade" class="form-label">Modalidade:</label>
+                        <select id="modalidade" name="modalidade" class="form-select" required>
+                            <option value="" disabled selected>Selecione a Modalidade</option>
+                            <option value="Frota">Frota</option>
+                            <option value="Rent a Car">Rent a Car</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="empresa_id" class="form-label">Empresa:</label>
+                        <select id="empresa_id" name="empresa_id" class="form-select" required>
+                            <option value="" disabled selected>Selecione a Empresa</option>
+                            {% for empresa in empresas %}
+                            <option value="{{ empresa.id }}">{{ empresa.nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="placa" class="form-label">Placa:</label>
+                        <input type="text" id="placa" name="placa" class="form-control" required placeholder="Ex: ABC-1234">
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="mes_referencia_nome" class="form-label">Mês de Referência:</label>
+                        <select id="mes_referencia_nome" name="mes_referencia_nome" class="form-select" required>
+                            <option value="" disabled selected>Selecione o Mês</option>
+                            {% for mes in meses %}
+                            <option value="{{ mes }}">{{ mes }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="infracao" class="form-label">Infração:</label>
+                        <input type="text" id="infracao" name="infracao" class="form-control" required>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="data_infracao" class="form-label">Data da Infração:</label>
+                        <input type="date" id="data_infracao" name="data_infracao" class="form-control" required>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="hora_infracao" class="form-label">Hora da Infração:</label>
+                        <input type="time" id="hora_infracao" name="hora_infracao" class="form-control">
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="valor_termo_desc" class="form-label">Valor Termo Desc.:</label>
+                        <input type="number" id="valor_termo_desc" name="valor_termo_desc" class="form-control" step="0.01" required>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="desconto_realizado" class="form-label">Desconto Realizado?</label>
+                        <select id="desconto_realizado" name="desconto_realizado" class="form-select" required>
+                            <option value="Sim">Sim</option>
+                            <option value="Não" selected>Não</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="enviado_email_rh" class="form-label">Enviado e-mail ao RH?</label>
+                        <select id="enviado_email_rh" name="enviado_email_rh" class="form-select" required>
+                            <option value="Sim">Sim</option>
+                            <option value="Não" selected>Não</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <label for="observacao" class="form-label">Observação:</label>
+                        <textarea id="observacao" name="observacao" class="form-control" rows="3"></textarea>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left-circle"></i> Voltar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save-fill"></i> Salvar Multa
+                    </button>
+                </div>
+            </form>
+            
+            <hr>
+            <div class="d-flex justify-content-center mt-3">
+                <a href="{{ url_for('importar_multas') }}" class="btn btn-info">
+                    <i class="bi bi-file-earmark-arrow-up"></i> Importar Planilha de Multas
+                </a>
+            </div>
         </div>
-      </form>
     </div>
-  </div>
 </div>
+
+<script>
+    document.getElementById('form-consulta-multa').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const usuarioId = document.getElementById('condutor_consulta').value;
+        if (usuarioId && usuarioId !== "") {
+            window.location.href = "/consultar_multas_por_condutor/" + usuarioId;
+        } else {
+            alert('Por favor, selecione um condutor para consultar as multas.');
+        }
+    });
+
+    // Script para preencher o centro de custo automaticamente
+    document.addEventListener('DOMContentLoaded', (event) => {
+        const condutorSelect = document.getElementById('usuario_id');
+        const centroCustoInput = document.getElementById('centro_custo');
+
+        condutorSelect.addEventListener('change', () => {
+            const selectedOption = condutorSelect.options[condutorSelect.selectedIndex];
+            const setor = selectedOption.getAttribute('data-setor');
+            centroCustoInput.value = setor || '';
+        });
+    });
+</script>
+
 {% endblock %}

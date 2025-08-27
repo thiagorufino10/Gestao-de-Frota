@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card p-4">
+            <h2 class="mb-4 text-center">
+                <i class="bi bi-pencil-square text-warning me-2"></i>Editar Multa
+            </h2>
+
+            <form method="POST">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="condutor" class="form-label">Condutor:</label>
+                        <input type="text" id="condutor" name="condutor" class="form-control" value="{{ multa.usuario.nome if multa.usuario else '' }}" disabled>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="centro_custo" class="form-label">Centro de Custo:</label>
+                        <input type="text" id="centro_custo" name="centro_custo" class="form-control" value="{{ multa.centro_custo if multa.centro_custo else '' }}" required>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="unidade" class="form-label">Unidade:</label>
+                        <select id="unidade" name="unidade" class="form-select" required>
+                            <option value="Matriz" {% if multa.unidade == 'Matriz' %}selected{% endif %}>Matriz</option>
+                            <option value="Bahia" {% if multa.unidade == 'Bahia' %}selected{% endif %}>Bahia</option>
+                            <option value="Fortaleza" {% if multa.unidade == 'Fortaleza' %}selected{% endif %}>Fortaleza</option>
+                            <option value="Paraíba" {% if multa.unidade == 'Paraíba' %}selected{% endif %}>Paraíba</option>
+                            <option value="Teresina" {% if multa.unidade == 'Teresina' %}selected{% endif %}>Teresina</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="modalidade" class="form-label">Modalidade:</label>
+                        <select id="modalidade" name="modalidade" class="form-select" required>
+                            <option value="Frota" {% if multa.modalidade == 'Frota' %}selected{% endif %}>Frota</option>
+                            <option value="Rent a Car" {% if multa.modalidade == 'Rent a Car' %}selected{% endif %}>Rent a Car</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label for="empresa_id" class="form-label">Empresa:</label>
+                        <select id="empresa_id" name="empresa_id" class="form-select" required>
+                            {% for empresa in empresas %}
+                            <option value="{{ empresa.id }}" {% if empresa.id == multa.empresa_id %}selected{% endif %}>{{ empresa.nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="placa" class="form-label">Placa:</label>
+                        <input type="text" id="placa" name="placa" class="form-control" value="{{ multa.placa }}" required>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="mes_referencia_nome" class="form-label">Mês de Referência:</label>
+                        <select id="mes_referencia_nome" name="mes_referencia_nome" class="form-select" required>
+                            {% set meses_pt = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"] %}
+                            {% set mes_atual = multa.mes_referencia.split('-')[1]|int if multa.mes_referencia else 0 %}
+                            {% for mes in meses_pt %}
+                                <option value="{{ mes }}" {% if loop.index == mes_atual %}selected{% endif %}>{{ mes }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="infracao" class="form-label">Infração:</label>
+                        <input type="text" id="infracao" name="infracao" class="form-control" value="{{ multa.infracao }}" required>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="data_infracao" class="form-label">Data da Infração:</label>
+                        <input type="date" id="data_infracao" name="data_infracao" class="form-control" value="{{ multa.data_infracao.strftime('%Y-%m-%d') if multa.data_infracao else '' }}" required>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="hora_infracao" class="form-label">Hora da Infração:</label>
+                        <input type="time" id="hora_infracao" name="hora_infracao" class="form-control" value="{{ multa.hora_infracao if multa.hora_infracao else '' }}">
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="valor_termo_desc" class="form-label">Valor Termo Desc.:</label>
+                        <input type="number" id="valor_termo_desc" name="valor_termo_desc" class="form-control" step="0.01" value="{{ multa.valor_termo_desc if multa.valor_termo_desc else '' }}" required>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label for="desconto_realizado" class="form-label">Desconto Realizado?</label>
+                        <select id="desconto_realizado" name="desconto_realizado" class="form-select" required>
+                            <option value="Sim" {% if multa.desconto_realizado == 'Sim' %}selected{% endif %}>Sim</option>
+                            <option value="Não" {% if multa.desconto_realizado == 'Não' %}selected{% endif %}>Não</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="enviado_email_rh" class="form-label">Enviado e-mail ao RH?</label>
+                        <select id="enviado_email_rh" name="enviado_email_rh" class="form-select" required>
+                            <option value="Sim" {% if multa.enviado_email_rh == 'Sim' %}selected{% endif %}>Sim</option>
+                            <option value="Não" {% if multa.enviado_email_rh == 'Não' %}selected{% endif %}>Não</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <label for="observacao" class="form-label">Observação:</label>
+                        <textarea id="observacao" name="observacao" class="form-control" rows="3">{{ multa.observacao if multa.observacao else '' }}</textarea>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    {% if multa.utilizacao %}
+                        <a href="{{ url_for('consultar_multas_por_utilizacao', utilizacao_id=multa.utilizacao.id) }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left-circle"></i> Cancelar
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('relatorio_multas') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left-circle"></i> Cancelar
+                        </a>
+                    {% endif %}
+                    <button type="submit" class="btn btn-warning">
+                        <i class="bi bi-save-fill"></i> Salvar Alterações
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

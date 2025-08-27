@@ -7,11 +7,22 @@
             <h2 class="mb-4 text-center">
                 <i class="bi bi-pencil-square text-warning me-2"></i>Registro de Utilização de Veículo
             </h2>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'success' if category == 'message' else category }}" role="alert">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
 
             <form method="POST">
                 <div class="mb-3">
-                    <label class="form-label">Usuário:</label>
-                    <select name="usuario_id" class="form-control" required>
+                    <label for="usuario_id" class="form-label">Usuário:</label>
+                    <select id="usuario_id" name="usuario_id" class="form-select" required>
+                        <option value="" disabled selected>Selecione o Usuário</option>
                         {% for usuario in usuarios %}
                         <option value="{{ usuario.id }}">{{ usuario.nome }}</option>
                         {% endfor %}
@@ -19,8 +30,9 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Veículo:</label>
-                    <select name="veiculo_id" class="form-control" required>
+                    <label for="veiculo_id" class="form-label">Veículo:</label>
+                    <select id="veiculo_id" name="veiculo_id" class="form-select" required>
+                        <option value="" disabled selected>Selecione o Veículo</option>
                         {% for veiculo in veiculos %}
                         <option value="{{ veiculo.id }}">{{ veiculo.marca_modelo }} - {{ veiculo.placa }}</option>
                         {% endfor %}
@@ -28,20 +40,21 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Mês (formato YYYY-MM):</label>
-                    <input type="text" name="mes" class="form-control" required placeholder="Ex: 2025-08">
+                    <label for="empresa" class="form-label">Empresa:</label>
+                    <input type="text" id="empresa_nome" class="form-control" disabled>
+                    <input type="hidden" id="empresa_id" name="empresa_id">
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">KM Inicial:</label>
-                    <input type="number" name="km_inicial" class="form-control" required>
+                    <label for="data_entrega" class="form-label">Data de Entrega:</label>
+                    <input type="date" id="data_entrega" name="data_entrega" class="form-control" required>
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">KM Final:</label>
-                    <input type="number" name="km_final" class="form-control" required>
+                    <label for="km_entrega" class="form-label">KM de Entrega:</label>
+                    <input type="number" id="km_entrega" name="km_entrega" class="form-control" required>
                 </div>
-
+                
                 <div class="d-flex justify-content-between">
                     <a href="{{ url_for('index') }}" class="btn btn-secondary">
                         <i class="bi bi-arrow-left-circle"></i> Voltar
@@ -54,4 +67,32 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.getElementById('veiculo_id').addEventListener('change', function() {
+        var veiculoId = this.value;
+        if (veiculoId) {
+            fetch('/get_veiculo_data/' + veiculoId)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                        document.getElementById('empresa_nome').value = '';
+                        document.getElementById('empresa_id').value = '';
+                        document.getElementById('km_entrega').value = '';
+                    } else {
+                        document.getElementById('empresa_nome').value = data.empresa_nome;
+                        document.getElementById('empresa_id').value = data.empresa_id;
+                        document.getElementById('km_entrega').value = data.km_entrega_proximo;
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        } else {
+            document.getElementById('empresa_nome').value = '';
+            document.getElementById('empresa_id').value = '';
+            document.getElementById('km_entrega').value = '';
+        }
+    });
+</script>
+
 {% endblock %}

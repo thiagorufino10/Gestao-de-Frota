@@ -10,18 +10,33 @@
 
             <form method="POST">
                 <div class="mb-3">
-                    <label class="form-label">Marca/Modelo:</label>
-                    <input type="text" name="marca_modelo" required class="form-control" placeholder="Ex: Toyota Corolla">
+                    <label for="empresa_id" class="form-label">Empresa:</label>
+                    <select id="empresa_id" name="empresa_id" class="form-select" required>
+                        <option value="" disabled selected>Selecione a Empresa</option>
+                        {% for empresa in empresas %}
+                        <option value="{{ empresa.id }}">{{ empresa.nome }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Placa:</label>
-                    <input type="text" name="placa" required class="form-control" placeholder="Ex: ABC-1234">
+                    <label for="data_locacao" class="form-label">Data da Retirada do Veículo:</label>
+                    <input type="date" id="data_locacao" name="data_locacao" required class="form-control">
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Cor:</label>
-                    <input type="text" name="cor" required class="form-control" placeholder="Ex: Prata">
+                    <label for="marca_modelo" class="form-label">Marca/Modelo:</label>
+                    <input type="text" id="marca_modelo" name="marca_modelo" required class="form-control" placeholder="Ex: Toyota Corolla">
+                </div>
+
+                <div class="mb-3">
+                    <label for="placa" class="form-label">Placa:</label>
+                    <input type="text" id="placa" name="placa" required class="form-control" placeholder="Ex: ABC-1234">
+                </div>
+
+                <div class="mb-3">
+                    <label for="cor" class="form-label">Cor:</label>
+                    <input type="text" id="cor" name="cor" required class="form-control" placeholder="Ex: Prata">
                 </div>
 
                 <div class="d-flex justify-content-between">
