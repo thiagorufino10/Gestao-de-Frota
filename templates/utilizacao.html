@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card p-4">
+            <h2 class="mb-4 text-center">
+                <i class="bi bi-pencil-square text-warning me-2"></i>Registro de Utilização de Veículo
+            </h2>
+
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label">Usuário:</label>
+                    <select name="usuario_id" class="form-control" required>
+                        {% for usuario in usuarios %}
+                        <option value="{{ usuario.id }}">{{ usuario.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Veículo:</label>
+                    <select name="veiculo_id" class="form-control" required>
+                        {% for veiculo in veiculos %}
+                        <option value="{{ veiculo.id }}">{{ veiculo.marca_modelo }} - {{ veiculo.placa }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Mês (formato YYYY-MM):</label>
+                    <input type="text" name="mes" class="form-control" required placeholder="Ex: 2025-08">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">KM Inicial:</label>
+                    <input type="number" name="km_inicial" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">KM Final:</label>
+                    <input type="number" name="km_final" class="form-control" required>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left-circle"></i> Voltar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save-fill"></i> Registrar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

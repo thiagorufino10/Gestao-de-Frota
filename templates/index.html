@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="mb-4 text-center">Sistema de Gestão de Frota</h1>
+
+<div class="row row-cols-1 row-cols-md-3 g-4">
+
+    <div class="col">
+        <a href="{{ url_for('cadastro_usuario') }}" class="text-decoration-none text-dark">
+            <div class="card h-100 text-center p-3">
+                <i class="bi bi-person-plus-fill fs-1 mb-2 text-primary"></i>
+                <h5>Cadastro de Usuário</h5>
+            </div>
+        </a>
+    </div>
+
+    <div class="col">
+        <a href="{{ url_for('cadastro_empresa') }}" class="text-decoration-none text-dark">
+            <div class="card h-100 text-center p-3">
+                <i class="bi bi-building fs-1 mb-2 text-success"></i>
+                <h5>Empresa Locadora</h5>
+            </div>
+        </a>
+    </div>
+
+    <div class="col">
+        <a href="{{ url_for('cadastro_veiculo') }}" class="text-decoration-none text-dark">
+            <div class="card h-100 text-center p-3">
+                <i class="bi bi-truck-front-fill fs-1 mb-2 text-danger"></i>
+                <h5>Cadastro de Veículo</h5>
+            </div>
+        </a>
+    </div>
+
+    <div class="col">
+        <a href="{{ url_for('cadastro_utilizacao') }}" class="text-decoration-none text-dark">
+            <div class="card h-100 text-center p-3">
+                <i class="bi bi-pencil-square fs-1 mb-2 text-warning"></i>
+                <h5>Registro de Utilização</h5>
+            </div>
+        </a>
+    </div>
+
+    <div class="col">
+        <a href="{{ url_for('cadastro_multa') }}" class="text-decoration-none text-dark">
+            <div class="card h-100 text-center p-3">
+                <i class="bi bi-exclamation-triangle-fill fs-1 mb-2 text-danger"></i>
+                <h5>Registro de Multas</h5>
+            </div>
+        </a>
+    </div>
+
+    <div class="col">
+        <a href="{{ url_for('relatorios') }}" class="text-decoration-none text-dark">
+            <div class="card h-100 text-center p-3">
+                <i class="bi bi-bar-chart-fill fs-1 mb-2 text-info"></i>
+                <h5>Relatórios</h5>
+            </div>
+        </a>
+    </div>
+
+</div>
+{% endblock %}
