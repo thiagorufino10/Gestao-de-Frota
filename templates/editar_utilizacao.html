@@ -1,65 +1,99 @@
 {% extends "base.html" %}
 
+{% block extra_head %}
+<style>
+  /* Fundo igual às demais telas */
+  body{
+    background:
+      radial-gradient(1100px 560px at 8% -10%, rgba(43,108,176,.20), transparent 60%),
+      radial-gradient(1000px 520px at 110% 110%, rgba(96,165,250,.16), transparent 60%),
+      linear-gradient(135deg, #0b1220, #0f172a 60%, #0b1220);
+  }
+  :root{
+    --rm-navy:#0F2C59;
+    --line:#E6EAF2;
+    --muted:#64748b;
+  }
+  .card-elev{
+    background:#fff; border:1px solid var(--line);
+    border-radius:16px; box-shadow:0 14px 40px rgba(0,0,0,.08);
+  }
+  .section-head{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:12px; padding-bottom:8px; border-bottom:1px solid var(--line);
+    margin-bottom:14px;
+  }
+  .section-head h2{
+    margin:0; font-weight:800; color:var(--rm-navy);
+    display:flex; align-items:center; gap:.5rem;
+  }
+  .helper{ color:var(--muted); }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card p-4">
-            <h2 class="mb-4 text-center">
-                <i class="bi bi-pencil-square text-warning me-2"></i>Editar Utilização de Veículo
-            </h2>
+  <div class="col-lg-8 col-md-10">
+    <div class="card-elev p-4">
+      <div class="section-head">
+        <h2><i class="bi bi-pencil-square text-warning"></i> Editar Utilização de Veículo</h2>
+        <span class="helper">Atualize os dados desta utilização.</span>
+      </div>
 
-            <form method="POST">
-                <div class="mb-3">
-                    <label for="usuario_id" class="form-label">Usuário:</label>
-                    <select id="usuario_id" name="usuario_id" class="form-select" required>
-                        {% for usuario in usuarios %}
-                        <option value="{{ usuario.id }}" {% if usuario.id == utilizacao.usuario_id %}selected{% endif %}>
-                            {{ usuario.nome }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="mb-3">
-                    <label for="veiculo_id" class="form-label">Veículo:</label>
-                    <select id="veiculo_id" name="veiculo_id" class="form-select" required>
-                        {% for veiculo in veiculos %}
-                        <option value="{{ veiculo.id }}" {% if veiculo.id == utilizacao.veiculo_id %}selected{% endif %}>
-                            {{ veiculo.marca_modelo }} - {{ veiculo.placa }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                
-                <div class="mb-3">
-                    <label for="empresa_id" class="form-label">Empresa:</label>
-                    <select id="empresa_id" name="empresa_id" class="form-select" required>
-                        <option value="{{ utilizacao.empresa.id }}" selected>{{ utilizacao.empresa.nome }}</option>
-                    </select>
-                </div>
-
-                <div class="mb-3">
-                    <label for="data_entrega" class="form-label">Data de Entrega:</label>
-                    <input type="date" id="data_entrega" name="data_entrega" class="form-control" 
-                           value="{{ utilizacao.data_entrega.strftime('%Y-%m-%d') }}" required>
-                </div>
-
-                <div class="mb-3">
-                    <label for="km_entrega" class="form-label">KM de Entrega:</label>
-                    <input type="number" id="km_entrega" name="km_entrega" class="form-control" 
-                           value="{{ utilizacao.km_entrega }}" required>
-                </div>
-
-                <div class="d-flex justify-content-between">
-                    <a href="{{ url_for('controle_utilizacao') }}" class="btn btn-secondary">
-                        <i class="bi bi-arrow-left-circle"></i> Cancelar
-                    </a>
-                    <button type="submit" class="btn btn-warning">
-                        <i class="bi bi-save-fill"></i> Salvar Alterações
-                    </button>
-                </div>
-            </form>
+      <form method="POST" class="row g-3">
+        <div class="col-md-6">
+          <label for="usuario_id" class="form-label">Usuário</label>
+          <select id="usuario_id" name="usuario_id" class="form-select" required>
+            {% for usuario in usuarios %}
+              <option value="{{ usuario.id }}" {% if usuario.id == utilizacao.usuario_id %}selected{% endif %}>
+                {{ usuario.nome }}
+              </option>
+            {% endfor %}
+          </select>
         </div>
+
+        <div class="col-md-6">
+          <label for="veiculo_id" class="form-label">Veículo</label>
+          <select id="veiculo_id" name="veiculo_id" class="form-select" required>
+            {% for veiculo in veiculos %}
+              <option value="{{ veiculo.id }}" {% if veiculo.id == utilizacao.veiculo_id %}selected{% endif %}>
+                {{ veiculo.marca_modelo }} — {{ veiculo.placa }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-12">
+          <label for="empresa_id" class="form-label">Empresa (locadora)</label>
+          <select id="empresa_id" name="empresa_id" class="form-select" required>
+            <option value="{{ utilizacao.empresa.id }}" selected>{{ utilizacao.empresa.nome }}</option>
+          </select>
+          <div class="form-text">Esta utilização permanece vinculada a esta empresa.</div>
+        </div>
+
+        <div class="col-md-6">
+          <label for="data_entrega" class="form-label">Data de Entrega</label>
+          <input type="date" id="data_entrega" name="data_entrega"
+                 class="form-control"
+                 value="{{ utilizacao.data_entrega.strftime('%Y-%m-%d') }}" required>
+        </div>
+
+        <div class="col-md-6">
+          <label for="km_entrega" class="form-label">KM de Entrega</label>
+          <input type="number" id="km_entrega" name="km_entrega"
+                 class="form-control" value="{{ utilizacao.km_entrega }}" required>
+        </div>
+
+        <div class="col-12 d-flex justify-content-between mt-2">
+          <a href="{{ url_for('controle_utilizacao') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left-circle"></i> Cancelar
+          </a>
+          <button type="submit" class="btn btn-warning">
+            <i class="bi bi-save-fill"></i> Salvar Alterações
+          </button>
+        </div>
+      </form>
     </div>
+  </div>
 </div>
 {% endblock %}

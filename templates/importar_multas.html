@@ -1,51 +1,107 @@
 {% extends "base.html" %}
 
+{% block extra_head %}
+<style>
+  /* Fundo no padrão do sistema */
+  body{
+    background:
+      radial-gradient(1100px 560px at 8% -10%, rgba(43,108,176,.20), transparent 60%),
+      radial-gradient(1000px 520px at 110% 110%, rgba(96,165,250,.16), transparent 60%),
+      linear-gradient(135deg, #0b1220, #0f172a 60%, #0b1220);
+  }
+  :root{
+    --rm-navy:#0F2C59;
+    --rm-blue:#2B6CB0;
+    --line:#E6EAF2;
+    --muted:#64748b;
+  }
+  .card-elev{
+    background:#fff; border:1px solid var(--line);
+    border-radius:16px; box-shadow:0 14px 40px rgba(0,0,0,.08);
+  }
+  .section-head{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:12px; padding-bottom:8px; border-bottom:1px solid var(--line);
+    margin-bottom:14px;
+  }
+  .section-head h2{
+    margin:0; font-weight:800; color:var(--rm-navy);
+    display:flex; align-items:center; gap:.5rem;
+    font-size:1.15rem;
+  }
+  .helper{ color:var(--muted); font-size:.95rem; }
+  .pill{
+    display:inline-flex; align-items:center; gap:8px;
+    border:1px solid var(--line); border-radius:999px; padding:.35rem .8rem;
+    background:#fff; font-size:.92rem; color:#0b1220;
+  }
+  .example{
+    background:#f8fafc; border:1px dashed var(--line);
+    border-radius:12px; padding:12px;
+  }
+  .example small{ color:var(--muted); }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card p-4">
-            <h2 class="mb-4 text-center">
-                <i class="bi bi-file-earmark-arrow-up text-info me-2"></i>Importar Planilha de Multas
-            </h2>
-            
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }}" role="alert">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
+  <div class="col-xl-8 col-lg-9">
+    <div class="card-elev p-4">
 
-            <form method="POST" enctype="multipart/form-data">
-                <div class="mb-3">
-                    <label for="file" class="form-label">Selecione o arquivo (.xlsx):</label>
-                    <input type="file" id="file" name="file" class="form-control" accept=".xlsx" required>
-                </div>
-                
-                <div class="d-flex justify-content-between">
-                    <a href="{{ url_for('cadastro_multa') }}" class="btn btn-secondary">
-                        <i class="bi bi-arrow-left-circle"></i> Voltar
-                    </a>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-upload"></i> Importar
-                    </button>
-                </div>
-            </form>
-            
-            <hr class="my-4">
-            <small class="text-muted">
-                **Instruções:**
-                <br>1. O arquivo deve ser no formato **.xlsx**.
-                <br>2. Os cabeçalhos das colunas devem ser **exatamente** os seguintes: 
-                <br>
-                <div class="bg-light p-2 mt-2">
-                    Condutor (a), Centro de Custo, Unidade, Modalidade, Empresa, Placa, Mês de Referência, Infração, Data da Infração, Hora, Valor Termo Desc., Desconto Realizado (sim ou não), ENVIADO E-MAIL AO RH? (sim ou nao), Observação.
-                </div>
-            </small>
+      <div class="section-head">
+        <h2><i class="bi bi-file-earmark-arrow-up text-primary"></i> Importar Planilha de Multas</h2>
+        <span class="helper">Arquivos aceitos: <strong>.xlsx, .xls, .csv</strong></span>
+      </div>
 
+      <form method="POST" enctype="multipart/form-data" class="mb-3">
+        <div class="mb-3">
+          <label for="file" class="form-label">Selecione o arquivo</label>
+          <input class="form-control" type="file" id="file" name="file" accept=".xlsx,.xls,.csv" required>
         </div>
+
+        <div class="d-flex justify-content-between">
+          <a href="{{ url_for('cadastro_multa') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left-circle"></i> Voltar
+          </a>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-cloud-arrow-up"></i> Importar
+          </button>
+        </div>
+      </form>
+
+      <hr class="my-4">
+
+      <div class="example">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <i class="bi bi-info-circle text-primary"></i>
+          <strong>Colunas esperadas na planilha</strong>
+        </div>
+        <small>
+          O sistema reconhece automaticamente estas colunas (nomes exatos são recomendados):
+        </small>
+        <ul class="mb-2 mt-2">
+          <li><code>Condutor (a)</code></li>
+          <li><code>Centro de Custo</code></li>
+          <li><code>Unidade</code></li>
+          <li><code>Modalidade</code></li>
+          <li><code>Empresa</code></li>
+          <li><code>Placa</code></li>
+          <li><code>Mês de Referência</code> (ex.: <em>Março 2025</em>)</li>
+          <li><code>Infração</code></li>
+          <li><code>Data da Infração</code> (dd/mm/aaaa ou aaaa-mm-dd)</li>
+          <li><code>Hora</code> (opcional, HH:MM)</li>
+          <li><code>Valor Termo Desc.</code></li>
+          <li><code>Desconto Realizado</code> (Sim/Não)</li>
+          <li><code>ENVIADO E-MAIL AO RH?</code> (Sim/Não)</li>
+          <li><code>Observação</code> (opcional)</li>
+        </ul>
+        <small>
+          Duplicidades são ignoradas com base em <em>Placa + Data da Infração + Infração</em>.
+          Condutor, Veículo e Empresa devem existir previamente no sistema.
+        </small>
+      </div>
+
     </div>
+  </div>
 </div>
 {% endblock %}

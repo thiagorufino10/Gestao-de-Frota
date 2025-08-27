@@ -1,54 +1,219 @@
 {% extends "base.html" %}
 
+{% block extra_head %}
+<style>
+  /* === Fundo igual ao index === */
+  body{
+    background:
+      radial-gradient(1100px 560px at 8% -10%, rgba(43,108,176,.20), transparent 60%),
+      radial-gradient(1000px 520px at 110% 110%, rgba(96,165,250,.16), transparent 60%),
+      linear-gradient(135deg, #0b1220, #0f172a 60%, #0b1220);
+  }
+
+  :root{
+    --rm-navy:#0F2C59;
+    --rm-blue:#2B6CB0;
+    --line:#E6EAF2;
+    --muted:#475569;
+  }
+
+  .card-elev{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:16px;
+    box-shadow:0 14px 40px rgba(0,0,0,.08);
+  }
+  .card-head{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:12px; padding-bottom:8px; border-bottom:1px solid var(--line);
+  }
+  .card-head h2{
+    margin:0; font-weight:800; color:var(--rm-navy);
+    display:flex; align-items:center; gap:.5rem;
+    font-size:1.15rem;
+  }
+  .hint{ color:var(--muted); font-size:.9rem; }
+
+  .form-grid{ display:grid; grid-template-columns: 2fr 1fr 1fr; gap:12px; }
+  .form-grid-2{ display:grid; grid-template-columns: 2fr 1fr 1fr; gap:12px; }
+  @media (max-width: 992px){
+    .form-grid, .form-grid-2{ grid-template-columns:1fr; }
+  }
+
+  .table thead th{ font-weight:700; color:#0F2C59; border-bottom:1px solid var(--line) !important; }
+  .table tbody td{ vertical-align:middle; }
+
+  .toolbar{
+    display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+  }
+  .search-input{ max-width:300px; }
+  .badge-soft{
+    background: rgba(43,108,176,.1);
+    color:#2B6CB0;
+    border:1px solid rgba(43,108,176,.25);
+    font-weight:700;
+  }
+  .badge-state{
+    font-weight:700;
+    border:1px solid rgba(0,0,0,.08);
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card p-4">
-            <h2 class="mb-4 text-center">
-                <i class="bi bi-truck-front-fill text-danger me-2"></i>Cadastro de Veículo
-            </h2>
+  <div class="col-lg-11">
 
-            <form method="POST">
-                <div class="mb-3">
-                    <label for="empresa_id" class="form-label">Empresa:</label>
-                    <select id="empresa_id" name="empresa_id" class="form-select" required>
-                        <option value="" disabled selected>Selecione a Empresa</option>
-                        {% for empresa in empresas %}
-                        <option value="{{ empresa.id }}">{{ empresa.nome }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
+    <!-- Formulário de cadastro -->
+    <div class="card card-elev p-4 mb-4">
+      <div class="card-head mb-3">
+        <h2><i class="bi bi-truck-front-fill"></i> Cadastro de Veículo</h2>
+        <div class="hint">Informe os dados do veículo e a locadora vinculada.</div>
+      </div>
 
-                <div class="mb-3">
-                    <label for="data_locacao" class="form-label">Data da Retirada do Veículo:</label>
-                    <input type="date" id="data_locacao" name="data_locacao" required class="form-control">
-                </div>
-
-                <div class="mb-3">
-                    <label for="marca_modelo" class="form-label">Marca/Modelo:</label>
-                    <input type="text" id="marca_modelo" name="marca_modelo" required class="form-control" placeholder="Ex: Toyota Corolla">
-                </div>
-
-                <div class="mb-3">
-                    <label for="placa" class="form-label">Placa:</label>
-                    <input type="text" id="placa" name="placa" required class="form-control" placeholder="Ex: ABC-1234">
-                </div>
-
-                <div class="mb-3">
-                    <label for="cor" class="form-label">Cor:</label>
-                    <input type="text" id="cor" name="cor" required class="form-control" placeholder="Ex: Prata">
-                </div>
-
-                <div class="d-flex justify-content-between">
-                    <a href="{{ url_for('index') }}" class="btn btn-secondary">
-                        <i class="bi bi-arrow-left-circle"></i> Voltar
-                    </a>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-save-fill"></i> Cadastrar
-                    </button>
-                </div>
-            </form>
+      <form method="POST">
+        <div class="form-grid mb-3">
+          <div>
+            <label class="form-label" for="marca_modelo">Marca / Modelo</label>
+            <input type="text" id="marca_modelo" name="marca_modelo" required class="form-control" placeholder="Ex: Fiat Toro Freedom">
+          </div>
+          <div>
+            <label class="form-label" for="placa">Placa</label>
+            <input type="text" id="placa" name="placa" required class="form-control" placeholder="ABC1D23" style="text-transform:uppercase;">
+          </div>
+          <div>
+            <label class="form-label" for="cor">Cor</label>
+            <input type="text" id="cor" name="cor" required class="form-control" placeholder="Ex: Branco">
+          </div>
         </div>
+
+        <div class="form-grid-2 mb-3">
+          <div>
+            <label class="form-label" for="empresa_id">Empresa Locadora</label>
+            <select id="empresa_id" name="empresa_id" class="form-select" required>
+              <option value="" selected disabled>Selecione...</option>
+              {% for emp in empresas %}
+                <option value="{{ emp.id }}">{{ emp.nome }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="form-label" for="data_locacao">Data de Locação</label>
+            <input type="date" id="data_locacao" name="data_locacao" required class="form-control">
+          </div>
+          <div>
+            <label class="form-label" for="franquia_km">Franquia de KM (mês)</label>
+            <input type="number" id="franquia_km" name="franquia_km" class="form-control" placeholder="2000" min="0" step="1">
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-between">
+          <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left-circle"></i> Voltar
+          </a>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-save-fill"></i> Cadastrar
+          </button>
+        </div>
+      </form>
     </div>
+
+    <!-- Lista de veículos -->
+    <div class="card card-elev p-4">
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <h4 class="m-0" style="color:var(--rm-navy); font-weight:800;">
+          <i class="bi bi-list-check me-1"></i> Veículos cadastrados
+        </h4>
+        <div class="toolbar">
+          <span class="badge rounded-pill badge-soft">Total: {{ veiculos|length }}</span>
+          <input id="filterInput" type="search" class="form-control form-control-sm search-input" placeholder="Filtrar por placa, modelo, cor ou empresa...">
+        </div>
+      </div>
+
+      {% if veiculos and veiculos|length > 0 %}
+        <div class="table-responsive">
+          <table class="table table-hover align-middle" id="veiculosTable">
+            <thead class="table-light">
+              <tr>
+                <th>Placa</th>
+                <th>Marca / Modelo</th>
+                <th>Cor</th>
+                <th>Empresa</th>
+                <th>Franquia KM</th>
+                <th>Locação</th>
+                <th>Disponível</th>
+                <th class="text-end" style="width:160px;">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for v in veiculos %}
+              <tr>
+                <td data-col="placa">{{ v.placa }}</td>
+                <td data-col="modelo">{{ v.marca_modelo }}</td>
+                <td data-col="cor">{{ v.cor }}</td>
+                <td data-col="empresa">{{ v.empresa.nome if v.empresa else '-' }}</td>
+                <td>{{ v.franquia_km or 2000 }}</td>
+                <td>{{ v.data_locacao.strftime('%d/%m/%Y') }}</td>
+                <td>
+                  {% if v.disponivel %}
+                    <span class="badge text-bg-success badge-state">Sim</span>
+                  {% else %}
+                    <span class="badge text-bg-secondary badge-state">Não</span>
+                  {% endif %}
+                </td>
+                <td class="text-end">
+                  {% if current_user.is_admin or current_user.can_delete %}
+                  <form action="{{ url_for('excluir_veiculo', id=v.id) }}" method="post" class="d-inline"
+                        onsubmit="return confirm('Tem certeza que deseja excluir o veículo {{ v.placa }}? Se houver utilizações ou multas vinculadas, a exclusão será bloqueada.');">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                      <i class="bi bi-trash-fill"></i> Excluir
+                    </button>
+                  </form>
+                  {% else %}
+                  <button type="button" class="btn btn-sm btn-outline-secondary" disabled title="Sem permissão para excluir">
+                    <i class="bi bi-lock-fill"></i> Excluir
+                  </button>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="alert alert-info mb-0">
+          <i class="bi bi-info-circle"></i> Nenhum veículo cadastrado ainda.
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // Filtro rápido na tabela
+  (function(){
+    const input = document.getElementById('filterInput');
+    const rows  = () => Array.from(document.querySelectorAll('#veiculosTable tbody tr'));
+
+    function matches(text, term){
+      return text.toLowerCase().includes(term.toLowerCase());
+    }
+
+    input?.addEventListener('input', function(){
+      const term = this.value.trim();
+      rows().forEach(tr => {
+        if(!term){ tr.style.display=''; return; }
+        const placa   = (tr.querySelector('[data-col="placa"]')?.textContent || '');
+        const modelo  = (tr.querySelector('[data-col="modelo"]')?.textContent || '');
+        const cor     = (tr.querySelector('[data-col="cor"]')?.textContent || '');
+        const empresa = (tr.querySelector('[data-col="empresa"]')?.textContent || '');
+        const ok = [placa, modelo, cor, empresa].some(t => matches(t, term));
+        tr.style.display = ok ? '' : 'none';
+      });
+    });
+  })();
+</script>
 {% endblock %}

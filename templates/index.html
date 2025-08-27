@@ -1,80 +1,214 @@
 {% extends "base.html" %}
 
+{% block extra_head %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --rm-navy:#0F2C59;
+    --rm-blue:#2B6CB0;
+    --rm-sky:#60A5FA;
+    --muted:#475569;
+    --line:rgba(15,44,89,.14);
+    --nav-h:64px; /* será ajustado via JS */
+  }
+
+  /* Sem scroll nesta página */
+  html, body { height: 100%; overflow: hidden; }
+
+  /* Fundo só do index (mantém outras telas limpas) */
+  body{
+    background:
+      radial-gradient(1100px 560px at 8% -10%, rgba(43,108,176,.20), transparent 60%),
+      radial-gradient(1000px 520px at 110% 110%, rgba(96,165,250,.16), transparent 60%),
+      linear-gradient(135deg, #0b1220, #0f172a 60%, #0b1220);
+  }
+
+  /* Viewport útil: centraliza o menu no meio exato da tela */
+  .viewport{
+    height: calc(100svh - var(--nav-h));
+    display: grid;
+    place-items: center;
+    padding: 10px 14px;
+  }
+
+  /* Painel só com a grade (sem hero) */
+  .panel{
+    width: min(1100px, 96vw);
+    height: min(540px, 78vh);
+    display: grid;
+  }
+
+  /* GRID 2x4 simétrica (8 itens) */
+  .grid{
+    background: #fff;               /* igual aos quadros de cadastro */
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    box-shadow: 0 14px 40px rgba(0,0,0,.16);
+    padding: 14px;
+    display:grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: 1fr 1fr;
+    gap: 12px;
+    overflow: hidden;
+  }
+
+  .card-link{ text-decoration: none !important; color: inherit; position: relative; }
+  .card{
+    height: 100%;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px;
+    display:flex; flex-direction:column; justify-content:center; align-items:center;
+    gap: 8px; text-align:center;
+    transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+    box-shadow: 0 8px 28px rgba(0,0,0,.08);
+  }
+  .card:hover{
+    transform: translateY(-3px);
+    border-color: rgba(43,108,176,.38);
+    box-shadow: 0 16px 36px rgba(43,108,176,.20);
+  }
+
+  .icon{
+    width: 56px; height: 56px; border-radius: 14px;
+    display:grid; place-items:center;
+    background: linear-gradient(135deg, rgba(43,108,176,.12), rgba(96,165,250,.12));
+    color: var(--rm-blue);
+    border: 1px solid rgba(43,108,176,.22);
+    font-size: 1.25rem;
+  }
+  .title{ margin: 4px 0 0; font-weight:800; color: var(--rm-navy); }
+  .desc{ margin:0; color: var(--muted); font-size:.92rem; }
+
+  .step{
+    position:absolute; left:10px; top:10px;
+    width: 28px; height: 28px; border-radius:999px;
+    display:grid; place-items:center;
+    background: linear-gradient(90deg, var(--rm-blue), var(--rm-sky));
+    color:#fff; font-weight:800; font-size:.9rem;
+    box-shadow: 0 6px 16px rgba(43,108,176,.35);
+    border: 1px solid rgba(255,255,255,.6);
+  }
+  .card-link.disabled{ pointer-events: none; }
+  .card-link.disabled .card{ filter: grayscale(.35); opacity: .75; }
+  .lock{ position:absolute; right:10px; top:10px; font-size:.95rem; color:#64748B; }
+
+  /* Escala leve para telas menores, mantendo centralização e sem rolagem */
+  @media (max-height: 700px){ .panel{ transform: scale(.96); transform-origin:center; } }
+  @media (max-height: 650px){ .panel{ transform: scale(.92); } }
+  @media (max-height: 610px){ .panel{ transform: scale(.88); } }
+  @media (max-width: 920px){  .panel{ transform: scale(.94); } }
+  @media (max-width: 780px){  .panel{ transform: scale(.88); } }
+</style>
+{% endblock %}
+
 {% block content %}
-<h1 class="mb-4 text-center">Sistema de Gestão de Frota</h1>
+{% set can_edit = (current_user.is_admin or current_user.can_edit) %}
+<div class="viewport container">
+  <div class="panel">
+    <div class="grid">
+      {# 1) Cadastro de Usuário #}
+      <a class="card-link{% if not can_edit %} disabled{% endif %}" href="{{ url_for('cadastro_usuario') if can_edit else '#' }}" aria-disabled="{{ 'true' if not can_edit else 'false' }}">
+        <span class="step">1</span>
+        {% if not can_edit %}<i class="bi bi-lock-fill lock" aria-hidden="true"></i>{% endif %}
+        <div class="card">
+          <div class="icon"><i class="bi bi-person-plus-fill"></i></div>
+          <div class="title">Cadastro de Usuário</div>
+          <p class="desc">Condutores, cargos e setores</p>
+        </div>
+      </a>
 
-<div class="row row-cols-1 row-cols-md-3 g-4">
+      {# 2) Empresa Locadora #}
+      <a class="card-link{% if not can_edit %} disabled{% endif %}" href="{{ url_for('cadastro_empresa') if can_edit else '#' }}" aria-disabled="{{ 'true' if not can_edit else 'false' }}">
+        <span class="step">2</span>
+        {% if not can_edit %}<i class="bi bi-lock-fill lock" aria-hidden="true"></i>{% endif %}
+        <div class="card">
+          <div class="icon"><i class="bi bi-building"></i></div>
+          <div class="title">Empresa Locadora</div>
+          <p class="desc">Gerencie locadoras</p>
+        </div>
+      </a>
 
-    <div class="col">
-        <a href="{{ url_for('cadastro_usuario') }}" class="text-decoration-none text-dark">
-            <div class="card h-100 text-center p-3">
-                <i class="bi bi-person-plus-fill fs-1 mb-2 text-primary"></i>
-                <h5>Cadastro de Usuário</h5>
-            </div>
-        </a>
+      {# 3) Cadastro de Veículo #}
+      <a class="card-link{% if not can_edit %} disabled{% endif %}" href="{{ url_for('cadastro_veiculo') if can_edit else '#' }}" aria-disabled="{{ 'true' if not can_edit else 'false' }}">
+        <span class="step">3</span>
+        {% if not can_edit %}<i class="bi bi-lock-fill lock" aria-hidden="true"></i>{% endif %}
+        <div class="card">
+          <div class="icon"><i class="bi bi-truck-front-fill"></i></div>
+          <div class="title">Cadastro de Veículo</div>
+          <p class="desc">Placa, modelo e franquia</p>
+        </div>
+      </a>
+
+      {# 4) Registro de Utilização #}
+      <a class="card-link{% if not can_edit %} disabled{% endif %}" href="{{ url_for('cadastro_utilizacao') if can_edit else '#' }}" aria-disabled="{{ 'true' if not can_edit else 'false' }}">
+        <span class="step">4</span>
+        {% if not can_edit %}<i class="bi bi-lock-fill lock" aria-hidden="true"></i>{% endif %}
+        <div class="card">
+          <div class="icon"><i class="bi bi-pencil-square"></i></div>
+          <div class="title">Registro de Utilização</div>
+          <p class="desc">Entrega e KM inicial</p>
+        </div>
+      </a>
+
+      {# 5) Controle de Utilização (todos) #}
+      <a class="card-link" href="{{ url_for('controle_utilizacao') }}">
+        <span class="step">5</span>
+        <div class="card">
+          <div class="icon"><i class="bi bi-list-task"></i></div>
+          <div class="title">Controle de Utilização</div>
+          <p class="desc">Quem está com qual veículo</p>
+        </div>
+      </a>
+
+      {# 6) Registro de Multa #}
+      <a class="card-link{% if not can_edit %} disabled{% endif %}" href="{{ url_for('cadastro_multa') if can_edit else '#' }}" aria-disabled="{{ 'true' if not can_edit else 'false' }}">
+        <span class="step">6</span>
+        {% if not can_edit %}<i class="bi bi-lock-fill lock" aria-hidden="true"></i>{% endif %}
+        <div class="card">
+          <div class="icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+          <div class="title">Registro de Multa</div>
+          <p class="desc">Lançamento de infrações</p>
+        </div>
+      </a>
+
+      {# 7) Relatório de KM (todos) #}
+      <a class="card-link" href="{{ url_for('relatorio_km') }}">
+        <span class="step">7</span>
+        <div class="card">
+          <div class="icon"><i class="bi bi-speedometer2"></i></div>
+          <div class="title">Relatório de KM</div>
+          <p class="desc">Totais por período e motoristas</p>
+        </div>
+      </a>
+
+      {# 8) Relatório de Multas (todos) #}
+      <a class="card-link" href="{{ url_for('relatorio_multas') }}">
+        <span class="step">8</span>
+        <div class="card">
+          <div class="icon"><i class="bi bi-file-earmark-bar-graph-fill"></i></div>
+          <div class="title">Relatório de Multas</div>
+          <p class="desc">Filtros e exportação</p>
+        </div>
+      </a>
     </div>
-
-    <div class="col">
-        <a href="{{ url_for('cadastro_empresa') }}" class="text-decoration-none text-dark">
-            <div class="card h-100 text-center p-3">
-                <i class="bi bi-building fs-1 mb-2 text-success"></i>
-                <h5>Empresa Locadora</h5>
-            </div>
-        </a>
-    </div>
-
-    <div class="col">
-        <a href="{{ url_for('cadastro_veiculo') }}" class="text-decoration-none text-dark">
-            <div class="card h-100 text-center p-3">
-                <i class="bi bi-truck-front-fill fs-1 mb-2 text-danger"></i>
-                <h5>Cadastro de Veículo</h5>
-            </div>
-        </a>
-    </div>
-
-    <div class="col">
-        <a href="{{ url_for('cadastro_utilizacao') }}" class="text-decoration-none text-dark">
-            <div class="card h-100 text-center p-3">
-                <i class="bi bi-pencil-square fs-1 mb-2 text-warning"></i>
-                <h5>Registro de Utilização</h5>
-            </div>
-        </a>
-    </div>
-
-    <div class="col">
-        <a href="{{ url_for('controle_utilizacao') }}" class="text-decoration-none text-dark">
-            <div class="card h-100 text-center p-3">
-                <i class="bi bi-list-task fs-1 mb-2 text-info"></i>
-                <h5>Controle de Utilização</h5>
-            </div>
-        </a>
-    </div>
-
-    <div class="col">
-        <a href="{{ url_for('cadastro_multa') }}" class="text-decoration-none text-dark">
-            <div class="card h-100 text-center p-3">
-                <i class="bi bi-exclamation-triangle-fill fs-1 mb-2 text-danger"></i>
-                <h5>Registro de Multas</h5>
-            </div>
-        </a>
-    </div>
-
-    <div class="col">
-        <a href="{{ url_for('relatorio_multas') }}" class="text-decoration-none text-dark">
-            <div class="card h-100 text-center p-3">
-                <i class="bi bi-file-earmark-bar-graph-fill fs-1 mb-2 text-danger"></i>
-                <h5>Relatório de Multas</h5>
-            </div>
-        </a>
-    </div>
-
-    <div class="col">
-        <a href="{{ url_for('relatorio_km') }}" class="text-decoration-none text-dark">
-            <div class="card h-100 text-center p-3">
-                <i class="bi bi-file-earmark-bar-graph-fill fs-1 mb-2 text-primary"></i>
-                <h5>Relatório de KM</h5>
-            </div>
-        </a>
-    </div>
+  </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // Ajusta --nav-h com a altura real da navbar (garante centralização exata e sem rolagem)
+  (function () {
+    function setNavH(){
+      const nav = document.querySelector('.navbar');
+      const h = nav ? nav.offsetHeight : 64;
+      document.documentElement.style.setProperty('--nav-h', h + 'px');
+    }
+    setNavH();
+    window.addEventListener('resize', setNavH);
+  })();
+</script>
 {% endblock %}

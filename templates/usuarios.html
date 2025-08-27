@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row">
+  <div class="col-12 col-lg-5">
+    <div class="card p-4 mb-4">
+      <h5 class="mb-3"><i class="bi bi-person-plus-fill me-2"></i>Criar novo usuário</h5>
+      <form method="POST" action="{{ url_for('usuarios') }}">
+        <input type="hidden" name="action" value="create">
+        <div class="mb-3">
+          <label class="form-label">Usuário (login)</label>
+          <input type="text" name="username" class="form-control" required placeholder="ex.: joao.silva">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Senha inicial</label>
+          <input type="password" name="password" class="form-control" required placeholder="defina uma senha">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Papel</label>
+          <select name="role" class="form-select">
+            <option value="user" selected>Operador</option>
+            <option value="admin">Administrador</option>
+          </select>
+        </div>
+        <div class="mb-2">Permissões</div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="create_can_edit" name="can_edit" checked>
+          <label class="form-check-label" for="create_can_edit">Pode editar</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="create_can_delete" name="can_delete">
+          <label class="form-check-label" for="create_can_delete">Pode excluir</label>
+        </div>
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="create_can_manage" name="can_manage_users">
+          <label class="form-check-label" for="create_can_manage">Pode gerenciar usuários</label>
+        </div>
+        <div class="d-grid">
+          <button class="btn btn-success" type="submit">
+            <i class="bi bi-check2-circle"></i> Criar usuário
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-12 col-lg-7">
+    <div class="card p-4">
+      <h5 class="mb-3"><i class="bi bi-people-fill me-2"></i>Usuários cadastrados</h5>
+
+      {% if users and users|length > 0 %}
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Usuário</th>
+              <th>Papel</th>
+              <th>Permissões</th>
+              <th class="text-end">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for u in users %}
+            <tr>
+              <td class="fw-semibold">{{ u.username }}</td>
+              <td>
+                {% if u.role == 'admin' %}
+                  <span class="badge bg-dark">Admin</span>
+                {% else %}
+                  <span class="badge bg-secondary">Operador</span>
+                {% endif %}
+              </td>
+              <td>
+                <form method="POST" action="{{ url_for('usuarios') }}" class="d-flex flex-wrap gap-3 align-items-center">
+                  <input type="hidden" name="action" value="update_perms">
+                  <input type="hidden" name="user_id" value="{{ u.id }}">
+
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="edit_{{ u.id }}" name="can_edit" {% if u.can_edit %}checked{% endif %}>
+                    <label class="form-check-label" for="edit_{{ u.id }}">Editar</label>
+                  </div>
+
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="delete_{{ u.id }}" name="can_delete" {% if u.can_delete %}checked{% endif %}>
+                    <label class="form-check-label" for="delete_{{ u.id }}">Excluir</label>
+                  </div>
+
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="manage_{{ u.id }}" name="can_manage_users" {% if u.can_manage_users %}checked{% endif %}>
+                    <label class="form-check-label" for="manage_{{ u.id }}">Gerenciar usuários</label>
+                  </div>
+
+                  <div class="ms-auto">
+                    <select name="role" class="form-select form-select-sm d-inline w-auto">
+                      <option value="user" {% if u.role == 'user' %}selected{% endif %}>Operador</option>
+                      <option value="admin" {% if u.role == 'admin' %}selected{% endif %}>Admin</option>
+                    </select>
+                    <button class="btn btn-sm btn-outline-primary ms-2" type="submit">
+                      <i class="bi bi-save"></i> Salvar
+                    </button>
+                  </div>
+                </form>
+              </td>
+
+              <td class="text-end">
+                {% set modal_id = 'resetModal_' ~ u.id %}
+                <button class="btn btn-sm btn-outline-warning me-2" data-bs-toggle="modal" data-bs-target="#{{ modal_id }}">
+                  <i class="bi bi-key"></i> Resetar senha
+                </button>
+
+                <form method="POST" action="{{ url_for('usuarios') }}" class="d-inline"
+                      onsubmit="return confirm('Excluir o usuário {{ u.username }}? Esta ação não pode ser desfeita.');">
+                  <input type="hidden" name="action" value="delete">
+                  <input type="hidden" name="user_id" value="{{ u.id }}">
+                  <button class="btn btn-sm btn-outline-danger" type="submit" {% if u.username == 'admin' %}disabled title="Não é permitido excluir o admin padrão."{% endif %}>
+                    <i class="bi bi-trash"></i> Excluir
+                  </button>
+                </form>
+
+                <!-- Modal Reset de Senha -->
+                <div class="modal fade" id="{{ modal_id }}" tabindex="-1" aria-labelledby="{{ modal_id }}Label" aria-hidden="true">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <form method="POST" action="{{ url_for('usuarios') }}">
+                        <div class="modal-header">
+                          <h5 class="modal-title" id="{{ modal_id }}Label"><i class="bi bi-key me-2"></i>Resetar senha — {{ u.username }}</h5>
+                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                        </div>
+                        <div class="modal-body">
+                          <input type="hidden" name="action" value="reset_password">
+                          <input type="hidden" name="user_id" value="{{ u.id }}">
+                          <div class="mb-3">
+                            <label class="form-label">Nova senha</label>
+                            <input type="password" name="new_password" class="form-control" required placeholder="Digite a nova senha">
+                          </div>
+                          <div class="text-muted small">A alteração é imediata.</div>
+                        </div>
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                          <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check"></i> Confirmar
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+                <!-- /Modal -->
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+        <div class="alert alert-info mb-0">
+          <i class="bi bi-info-circle"></i> Nenhum usuário cadastrado.
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

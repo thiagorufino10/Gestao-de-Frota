@@ -1,47 +1,259 @@
 {% extends "base.html" %}
 
+{% block extra_head %}
+<style>
+  /* Fundo igual às demais telas */
+  body{
+    background:
+      radial-gradient(1100px 560px at 8% -10%, rgba(43,108,176,.20), transparent 60%),
+      radial-gradient(1000px 520px at 110% 110%, rgba(96,165,250,.16), transparent 60%),
+      linear-gradient(135deg, #0b1220, #0f172a 60%, #0b1220);
+  }
+
+  :root{
+    --rm-navy:#0F2C59;
+    --rm-blue:#2B6CB0;
+    --line:#E6EAF2;
+    --muted:#475569;
+  }
+
+  .card-elev{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:16px;
+    box-shadow:0 14px 40px rgba(0,0,0,.08);
+  }
+  .section-head{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:12px; padding-bottom:8px; border-bottom:1px solid var(--line);
+    margin-bottom:14px;
+  }
+  .section-head h2{
+    margin:0; font-weight:800; color:var(--rm-navy);
+    display:flex; align-items:center; gap:.5rem;
+  }
+  .helper{ color:var(--muted); }
+
+  .pill{
+    display:inline-flex; align-items:center; gap:8px;
+    border:1px solid var(--line); border-radius:999px; padding:.4rem .8rem;
+    background:#fff;
+  }
+
+  .filters{
+    display:flex; flex-wrap:wrap; gap:10px; align-items:end; margin-bottom:10px;
+  }
+  .filters .form-control, .filters .form-select{ min-width: 220px; }
+  .filters .btn{ height:38px; }
+
+  .table thead th{ font-weight:700; color:#0F2C59; border-bottom:1px solid var(--line) !important; }
+  .table tbody td{ vertical-align:middle; }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-10">
-        <div class="card p-4">
-            <h2 class="mb-4 text-center">
-                Multas de {{ usuario.nome }}
-            </h2>
+  <div class="col-lg-10">
+    <div class="card-elev p-4">
 
-            {% if multas %}
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Placa</th>
-                        <th>Infração</th>
-                        <th>Data</th>
-                        <th>Valor</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for multa in multas %}
-                    <tr>
-                        <td>{{ multa.placa }}</td>
-                        <td>{{ multa.infracao }}</td>
-                        <td>{{ multa.data_infracao.strftime('%d/%m/%Y') }}</td>
-                        <td>R$ {{ multa.valor_termo_desc | string | replace('.', ',') }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            {% else %}
-            <div class="alert alert-info text-center" role="alert">
-                Nenhuma multa encontrada para este condutor.
-            </div>
-            {% endif %}
+      <div class="section-head">
+        <h2><i class="bi bi-person-vcard text-primary"></i> Multas de {{ usuario.nome }}</h2>
+        <span class="helper">Listagem detalhada das ocorrências deste condutor.</span>
+      </div>
 
-            <div class="text-center mt-4">
-                <a href="{{ url_for('cadastro_multa') }}" class="btn btn-secondary">
-                    <i class="bi bi-arrow-left-circle"></i> Voltar
-                </a>
-            </div>
-
+      {% if multas and multas|length > 0 %}
+        <!-- Filtros por período -->
+        <div class="filters">
+          <div>
+            <label class="form-label mb-1">Data inicial</label>
+            <input type="date" id="fDataInicio" class="form-control" />
+          </div>
+          <div>
+            <label class="form-label mb-1">Data final</label>
+            <input type="date" id="fDataFim" class="form-control" />
+          </div>
+          <div class="d-flex gap-2">
+            <button id="btnAplicar" class="btn btn-primary"><i class="bi bi-funnel"></i> Aplicar filtro</button>
+            <button id="btnLimpar" class="btn btn-outline-secondary"><i class="bi bi-x-circle"></i> Limpar</button>
+          </div>
         </div>
+
+        <!-- Resumo dinâmico -->
+        <div class="d-flex flex-wrap gap-2 mb-3">
+          <div class="pill"><i class="bi bi-collection"></i> <strong>Total de multas:</strong> <span id="resTotal">{{ multas|length }}</span></div>
+          <div class="pill"><i class="bi bi-cash-coin"></i> <strong>Soma dos valores:</strong> R$ <span id="resSoma">
+            {%- set ns = namespace(total=0.0) -%}
+            {%- for m in multas -%}
+              {%- if m.valor_termo_desc -%}{%- set ns.total = ns.total + m.valor_termo_desc -%}{%- endif -%}
+            {%- endfor -%}
+            {{ ('%.2f' % ns.total).replace('.', ',') }}
+          </span></div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table align-middle" id="tMultas">
+            <thead class="table-light">
+              <tr>
+                <th>Placa</th>
+                <th>Empresa</th>
+                <th>Infração</th>
+                <th>Data</th>
+                <th>Hora</th>
+                <th>Mês Ref.</th>
+                <th class="text-end">Valor</th>
+                {% if current_user.is_authenticated and (current_user.is_admin or current_user.can_edit or current_user.can_delete) %}
+                  <th class="text-end">Ações</th>
+                {% endif %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for multa in multas %}
+              <tr
+                data-date="{{ multa.data_infracao.isoformat() if multa.data_infracao else '' }}"
+                data-valor="{{ multa.valor_termo_desc if multa.valor_termo_desc is not none else 0 }}"
+              >
+                <td>{{ multa.placa }}</td>
+                <td>{{ multa.empresa.nome if multa.empresa else '-' }}</td>
+                <td>{{ multa.infracao or '-' }}</td>
+                <td>{{ multa.data_infracao.strftime('%d/%m/%Y') if multa.data_infracao else '-' }}</td>
+                <td>{{ multa.hora_infracao or '-' }}</td>
+                <td>
+                  {% if multa.mes_referencia %}
+                    {% set mes = multa.mes_referencia.split('-')[1] %}
+                    {% set mapa = {'01':'Janeiro','02':'Fevereiro','03':'Março','04':'Abril','05':'Maio','06':'Junho','07':'Julho','08':'Agosto','09':'Setembro','10':'Outubro','11':'Novembro','12':'Dezembro'} %}
+                    {{ mapa.get(mes,'-') }}
+                  {% else %}-{% endif %}
+                </td>
+                <td class="text-end">
+                  {% if multa.valor_termo_desc is not none %}
+                    R$ {{ ('%.2f' % multa.valor_termo_desc).replace('.', ',') }}
+                  {% else %}-{% endif %}
+                </td>
+
+                {% if current_user.is_authenticated and (current_user.is_admin or current_user.can_edit or current_user.can_delete) %}
+                <td class="text-end">
+                  {% if current_user.is_admin or current_user.can_edit %}
+                    <a href="{{ url_for('editar_multa', id=multa.id) }}" class="btn btn-sm btn-outline-primary me-1">
+                      <i class="bi bi-pencil-square"></i> Editar
+                    </a>
+                  {% endif %}
+                  {% if current_user.is_admin or current_user.can_delete %}
+                    <form action="{{ url_for('excluir_multa', id=multa.id) }}" method="POST" class="d-inline"
+                          onsubmit="return confirm('Excluir esta multa?');">
+                      <button class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash"></i> Excluir
+                      </button>
+                    </form>
+                  {% endif %}
+                </td>
+                {% endif %}
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+      {% else %}
+        <div class="alert alert-info mb-0">
+          <i class="bi bi-info-circle"></i> Nenhuma multa encontrada para este condutor.
+        </div>
+      {% endif %}
+
+      <div class="text-center mt-4">
+        <a href="{{ url_for('cadastro_multa') }}" class="btn btn-outline-secondary">
+          <i class="bi bi-arrow-left-circle"></i> Voltar
+        </a>
+      </div>
+
     </div>
+  </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  (function(){
+    const tBody = document.querySelector('#tMultas tbody');
+    const resTotal = document.getElementById('resTotal');
+    const resSoma  = document.getElementById('resSoma');
+    const fIni = document.getElementById('fDataInicio');
+    const fFim = document.getElementById('fDataFim');
+    const btnAplicar = document.getElementById('btnAplicar');
+    const btnLimpar  = document.getElementById('btnLimpar');
+
+    if(!tBody){ return; }
+
+    function parseISO(d){
+      // d: "YYYY-MM-DD" -> Date (00:00 local)
+      if(!d) return null;
+      const [y,m,day] = d.split('-').map(Number);
+      if(!y || !m || !day) return null;
+      return new Date(y, m-1, day);
+    }
+
+    function formatBRL(n){
+      try{
+        return Number(n).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+      }catch(e){ return (Number(n).toFixed(2)).replace('.', ','); }
+    }
+
+    function applyFilter(){
+      const iniStr = fIni.value || '';
+      const fimStr = fFim.value || '';
+      const ini = parseISO(iniStr);
+      const fim = parseISO(fimStr);
+
+      let total = 0;
+      let count = 0;
+
+      Array.from(tBody.querySelectorAll('tr')).forEach(tr=>{
+        const dIso = tr.getAttribute('data-date');
+        const val  = Number(tr.getAttribute('data-valor') || 0);
+        const d = parseISO(dIso);
+
+        // Regras:
+        // - Se não houver nenhuma data nos filtros -> mostra tudo
+        // - Se houver ao menos um filtro, e a multa não tem data -> esconde
+        // - Caso contrário, compara o intervalo [ini..fim]
+        let show = true;
+        if(ini || fim){
+          if(!d){ show = false; }
+          else{
+            if(ini && d < ini) show = false;
+            if(fim && d > fim) show = false;
+          }
+        }
+
+        tr.style.display = show ? '' : 'none';
+        if(show){
+          count += 1;
+          total += isFinite(val) ? val : 0;
+        }
+      });
+
+      resTotal.textContent = count;
+      resSoma.textContent = formatBRL(total);
+    }
+
+    function clearFilter(){
+      fIni.value = '';
+      fFim.value = '';
+      applyFilter();
+    }
+
+    btnAplicar?.addEventListener('click', applyFilter);
+    btnLimpar?.addEventListener('click', clearFilter);
+    fIni?.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); applyFilter(); }});
+    fFim?.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); applyFilter(); }});
+
+    // Se vierem parâmetros ?data_inicio=YYYY-MM-DD&data_fim=YYYY-MM-DD, pré-carrega
+    try{
+      const p = new URLSearchParams(window.location.search);
+      const di = p.get('data_inicio'); const df = p.get('data_fim');
+      if(di){ fIni.value = di; }
+      if(df){ fFim.value = df; }
+      if(di || df){ applyFilter(); }
+    }catch(e){}
+  })();
+</script>
 {% endblock %}

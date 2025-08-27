@@ -1,112 +1,166 @@
 {% extends "base.html" %}
 
+{% block extra_head %}
+<style>
+  /* Fundo igual ao das demais páginas */
+  body{
+    background:
+      radial-gradient(1100px 560px at 8% -10%, rgba(43,108,176,.20), transparent 60%),
+      radial-gradient(1000px 520px at 110% 110%, rgba(96,165,250,.16), transparent 60%),
+      linear-gradient(135deg, #0b1220, #0f172a 60%, #0b1220);
+  }
+  :root{
+    --rm-navy:#0F2C59;
+    --line:#E6EAF2;
+    --muted:#64748b;
+  }
+  .card-elev{
+    background:#fff; border:1px solid var(--line);
+    border-radius:16px; box-shadow:0 14px 40px rgba(0,0,0,.08);
+  }
+  .section-head{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:12px; padding-bottom:8px; border-bottom:1px solid var(--line);
+    margin-bottom:14px;
+  }
+  .section-head h2{
+    margin:0; font-weight:800; color:var(--rm-navy);
+    display:flex; align-items:center; gap:.5rem;
+  }
+  .helper{ color:var(--muted); }
+  .toolbar{
+    display:flex; justify-content:flex-end; gap:.5rem; flex-wrap:wrap;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-12">
-        <div class="card p-4">
-            <h2 class="mb-4 text-center">
-                <i class="bi bi-file-earmark-bar-graph-fill text-danger me-2"></i>Relatório de Multas
-            </h2>
-            
-            <form action="{{ url_for('relatorio_multas') }}" method="GET" class="mb-4">
-                <div class="row g-3 align-items-end">
-                    <div class="col-md-3">
-                        <label for="data_inicio" class="form-label">Data de Início:</label>
-                        <input type="date" class="form-control" id="data_inicio" name="data_inicio" value="{{ request.args.get('data_inicio', '') }}">
-                    </div>
-                    <div class="col-md-3">
-                        <label for="data_fim" class="form-label">Data de Fim:</label>
-                        <input type="date" class="form-control" id="data_fim" name="data_fim" value="{{ request.args.get('data_fim', '') }}">
-                    </div>
-                    <div class="col-md-4">
-                        <label for="veiculo_id" class="form-label">Veículo:</label>
-                        <select id="veiculo_id" name="veiculo_id" class="form-select">
-                            <option value="">Todos os Veículos</option>
-                            {% for veiculo in veiculos %}
-                            <option value="{{ veiculo.id }}" {% if request.args.get('veiculo_id') and request.args.get('veiculo_id')|int == veiculo.id %}selected{% endif %}>
-                                {{ veiculo.placa }} - {{ veiculo.marca_modelo }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="bi bi-search"></i> Buscar
-                        </button>
-                    </div>
-                </div>
-            </form>
+  <div class="col-xl-10 col-lg-11">
 
-            {% if multas %}
-            <div class="mb-3 d-flex justify-content-end">
-                <a href="{{ url_for('exportar_multas_excel', data_inicio=request.args.get('data_inicio', ''), data_fim=request.args.get('data_fim', ''), veiculo_id=request.args.get('veiculo_id', '')) }}" class="btn btn-success">
-                    <i class="bi bi-file-earmark-excel"></i> Exportar para Excel
-                </a>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-striped table-hover table-sm">
-                    <thead>
-                        <tr>
-                            <th>Condutor</th>
-                            <th>Centro de Custo</th>
-                            <th>Unidade</th>
-                            <th>Modalidade</th>
-                            <th>Empresa</th>
-                            <th>Placa</th>
-                            <th>Mês Referência</th>
-                            <th>Infração</th>
-                            <th>Data Infração</th>
-                            <th>Hora</th>
-                            <th>Valor</th>
-                            <th>Desconto?</th>
-                            <th>Email RH?</th>
-                            <th>Observação</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% set meses_por_extenso = {
-                            '01': 'Janeiro', '02': 'Fevereiro', '03': 'Março', '04': 'Abril',
-                            '05': 'Maio', '06': 'Junho', '07': 'Julho', '08': 'Agosto',
-                            '09': 'Setembro', '10': 'Outubro', '11': 'Novembro', '12': 'Dezembro'
-                        } %}
-                        {% for multa in multas %}
-                        <tr>
-                            <td>{{ multa.usuario.nome if multa.usuario else '-' }}</td>
-                            <td>{{ multa.centro_custo if multa.centro_custo else '-' }}</td>
-                            <td>{{ multa.unidade if multa.unidade else '-' }}</td>
-                            <td>{{ multa.modalidade if multa.modalidade else '-' }}</td>
-                            <td>{{ multa.empresa.nome if multa.empresa else '-' }}</td>
-                            <td>{{ multa.placa }}</td>
-                            <td>
-                                {% if multa.mes_referencia %}
-                                    {% set mes_num = multa.mes_referencia.split('-')[1] %}
-                                    {{ meses_por_extenso[mes_num] if mes_num in meses_por_extenso else '-' }}
-                                {% else %}
-                                    -
-                                {% endif %}
-                            </td>
-                            <td>{{ multa.infracao }}</td>
-                            <td>{{ multa.data_infracao.strftime('%d/%m/%Y') if multa.data_infracao else '-' }}</td>
-                            <td>{{ multa.hora_infracao if multa.hora_infracao else '-' }}</td>
-                            <td>R$ {{ "%.2f"|format(multa.valor_termo_desc) if multa.valor_termo_desc else '-' }}</td>
-                            <td>{{ multa.desconto_realizado if multa.desconto_realizado else '-' }}</td>
-                            <td>{{ multa.enviado_email_rh if multa.enviado_email_rh else '-' }}</td>
-                            <td>{{ multa.observacao if multa.observacao else '-' }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            {% else %}
-            <div class="alert alert-info text-center" role="alert">
-                Selecione os filtros acima e clique em "Buscar" para visualizar as multas.
-            </div>
-            {% endif %}
+    <!-- Filtros -->
+    <div class="card-elev p-4 mb-4">
+      <div class="section-head">
+        <h2><i class="bi bi-file-earmark-bar-graph-fill text-danger"></i> Relatório de Multas</h2>
+        <span class="helper">Filtre por período e veículo para listar e exportar.</span>
+      </div>
 
-            <a href="{{ url_for('index') }}" class="btn btn-secondary mt-3">
-                <i class="bi bi-arrow-left-circle"></i> Voltar
-            </a>
+      <form action="{{ url_for('relatorio_multas') }}" method="GET" class="row g-3 align-items-end">
+        <div class="col-md-3">
+          <label for="data_inicio" class="form-label">Data de Início</label>
+          <input type="date" class="form-control" id="data_inicio" name="data_inicio"
+                 value="{{ request.args.get('data_inicio','') }}">
         </div>
+        <div class="col-md-3">
+          <label for="data_fim" class="form-label">Data de Fim</label>
+          <input type="date" class="form-control" id="data_fim" name="data_fim"
+                 value="{{ request.args.get('data_fim','') }}">
+        </div>
+        <div class="col-md-4">
+          <label for="veiculo_id" class="form-label">Veículo</label>
+          <select id="veiculo_id" name="veiculo_id" class="form-select">
+            <option value="">Todos os Veículos</option>
+            {% for veiculo in veiculos %}
+              <option value="{{ veiculo.id }}"
+                      {% if request.args.get('veiculo_id') and request.args.get('veiculo_id')|int == veiculo.id %}selected{% endif %}>
+                {{ veiculo.placa }} — {{ veiculo.marca_modelo }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+          <a href="{{ url_for('relatorio_multas') }}" class="btn btn-outline-secondary w-50">
+            <i class="bi bi-eraser"></i>
+          </a>
+          <button type="submit" class="btn btn-primary w-50">
+            <i class="bi bi-search"></i>
+          </button>
+        </div>
+      </form>
     </div>
+
+    <!-- Resultado -->
+    <div class="card-elev p-4">
+      {% if multas %}
+        <div class="toolbar mb-3">
+          <a class="btn btn-success"
+             href="{{ url_for('exportar_multas_excel',
+                              data_inicio=request.args.get('data_inicio',''),
+                              data_fim=request.args.get('data_fim',''),
+                              veiculo_id=request.args.get('veiculo_id','')) }}">
+            <i class="bi bi-file-earmark-excel"></i> Exportar Excel
+          </a>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle table-sm">
+            <thead class="table-light">
+              <tr>
+                <th>Condutor</th>
+                <th>Centro de Custo</th>
+                <th>Unidade</th>
+                <th>Modalidade</th>
+                <th>Empresa</th>
+                <th>Placa</th>
+                <th>Mês Ref.</th>
+                <th>Infração</th>
+                <th>Data</th>
+                <th>Hora</th>
+                <th>Valor</th>
+                <th>Desconto?</th>
+                <th>Email RH?</th>
+                <th>Observação</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% set meses_por_extenso = {
+                '01': 'Janeiro', '02': 'Fevereiro', '03': 'Março', '04': 'Abril',
+                '05': 'Maio', '06': 'Junho', '07': 'Julho', '08': 'Agosto',
+                '09': 'Setembro', '10': 'Outubro', '11': 'Novembro', '12': 'Dezembro'
+              } %}
+              {% for multa in multas %}
+                <tr>
+                  <td>{{ multa.usuario.nome if multa.usuario else '-' }}</td>
+                  <td>{{ multa.centro_custo or '-' }}</td>
+                  <td>{{ multa.unidade or '-' }}</td>
+                  <td>{{ multa.modalidade or '-' }}</td>
+                  <td>{{ multa.empresa.nome if multa.empresa else '-' }}</td>
+                  <td>{{ multa.placa }}</td>
+                  <td>
+                    {% if multa.mes_referencia %}
+                      {% set mes_num = multa.mes_referencia.split('-')[1] %}
+                      {{ meses_por_extenso[mes_num] if mes_num in meses_por_extenso else '-' }}
+                    {% else %}-{% endif %}
+                  </td>
+                  <td>{{ multa.infracao or '-' }}</td>
+                  <td>{{ multa.data_infracao.strftime('%d/%m/%Y') if multa.data_infracao else '-' }}</td>
+                  <td>{{ multa.hora_infracao or '-' }}</td>
+                  <td>
+                    {% if multa.valor_termo_desc is not none %}
+                      R$ {{ "%.2f"|format(multa.valor_termo_desc) }}
+                    {% else %}-{% endif %}
+                  </td>
+                  <td>{{ multa.desconto_realizado or '-' }}</td>
+                  <td>{{ multa.enviado_email_rh or '-' }}</td>
+                  <td class="text-truncate" style="max-width:220px;">{{ multa.observacao or '-' }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="alert alert-info mb-0 text-center" role="alert">
+          Selecione os filtros acima e clique em <strong>Buscar</strong> para visualizar as multas.
+        </div>
+      {% endif %}
+
+      <div class="text-center mt-3">
+        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+          <i class="bi bi-arrow-left-circle"></i> Voltar
+        </a>
+      </div>
+    </div>
+
+  </div>
 </div>
 {% endblock %}

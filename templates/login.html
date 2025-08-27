@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Esconde navbar no login e remove padding default do container do base */
+  .navbar { display: none !important; }
+  .container { max-width: 100% !important; padding: 0 !important; }
+
+  :root{
+    --rm-navy:#0F2C59;  /* primário */
+    --rm-blue:#2B6CB0;  /* destaque */
+    --rm-sky:#60A5FA;   /* realce */
+    --ink:#0b1220;      /* fundo */
+    --paper:#ffffff;    /* cartão */
+    --text:#0F172A;     /* texto principal */
+    --muted:#475569;    /* texto secundário */
+    --line:rgba(15,44,89,.14);
+  }
+
+  html, body { height: 100%; overflow: hidden; }
+  body{
+    font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    color: var(--text);
+    background:
+      radial-gradient(1200px 600px at 10% -10%, rgba(43,108,176,.25), transparent 60%),
+      radial-gradient(1000px 520px at 110% 110%, rgba(96,165,250,.20), transparent 60%),
+      linear-gradient(135deg, #0b1220, #0f172a 60%, #0b1220);
+  }
+
+  /* Centro absoluto sem rolagem */
+  .auth-center{
+    min-height: 100svh;
+    display: grid;
+    place-items: center;
+    padding: 24px;          /* só lateral; não cria scroll vertical */
+  }
+
+  /* Cartão principal */
+  .auth-card{
+    width: min(480px, 94vw);
+    border-radius: 18px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    box-shadow: 0 22px 60px rgba(0,0,0,.28);
+    overflow: hidden;
+  }
+
+  /* Head do card com “barra de cor” */
+  .auth-head{
+    position: relative;
+    padding: 28px 26px 16px;
+    background: linear-gradient(180deg, #F5F9FF 0%, #FFFFFF 100%);
+    border-bottom: 1px solid var(--line);
+  }
+  .accent-bar{
+    position: absolute; inset: 0 0 auto 0; height: 4px;
+    background-image: linear-gradient(90deg, var(--rm-blue), var(--rm-sky));
+  }
+  .brand-badge{
+    width: 72px; height: 72px; border-radius: 18px;
+    background: #fff; border: 1px solid rgba(15,44,89,.15);
+    box-shadow: 0 10px 24px rgba(15,44,89,.12);
+    display:grid; place-items:center; overflow:hidden;
+  }
+  .brand-badge img{ width: 70%; height: auto; object-fit: contain; }
+
+  .head-title{ margin: 12px 0 2px; color: var(--rm-navy); font-weight: 800; }
+  .head-sub{ color: var(--muted); }
+
+  /* Corpo do card */
+  .auth-body{ padding: 22px 26px 24px; }
+
+  /* Inputs flutuantes (Bootstrap form-floating) com pequenos ajustes */
+  .form-floating>.form-control{
+    border: 1px solid rgba(15,44,89,.18);
+  }
+  .form-floating>.form-control:focus{
+    border-color: rgba(43,108,176,.65) !important;
+    box-shadow: 0 0 0 .25rem rgba(43,108,176,.20) !important;
+  }
+  .form-floating>label{ color: var(--muted); }
+
+  /* Grupo de senha com botão de toggle acoplado */
+  .pass-wrap{ position: relative; }
+  .toggle-btn{
+    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+    border: 1px solid rgba(15,44,89,.18); background: #fff; color: var(--rm-navy);
+    border-radius: .5rem; padding: .375rem .5rem; line-height: 1;
+  }
+  .toggle-btn:hover{ background:#f8fafc; }
+
+  .caps-hint{ color:#B45309; } /* âmbar visível em fundo claro */
+
+  /* Botão principal */
+  .btn-brand{
+    background-image: linear-gradient(90deg, var(--rm-blue), var(--rm-sky));
+    border: none; color: #fff; font-weight: 800;
+  }
+  .btn-brand:hover{ filter: brightness(1.06); }
+
+  .alert-soft{
+    background:#F1F5FF; border:1px solid rgba(43,108,176,.25); color:#0F2C59;
+  }
+
+  /* Rodapé somente com texto branco, sem barra */
+  .site-footer{
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+    background: transparent;   /* sem barra */
+    border: 0;
+    color: #ffffff;            /* letras brancas */
+    pointer-events: none;      /* não bloqueia cliques no form */
+  }
+  .site-footer .inner{
+    max-width: 100%;
+    display: flex; justify-content: center; align-items: center;
+    padding: 0 12px 12px;      /* encosta no final da página */
+    font-weight: 700; font-size: .92rem; text-align: center;
+    text-shadow: 0 2px 10px rgba(0,0,0,.45); /* legibilidade */
+  }
+
+  /* Acessibilidade: foco visível */
+  .btn:focus, .toggle-btn:focus{
+    outline: 2px solid rgba(96,165,250,.95) !important;
+    outline-offset: 2px !important;
+    box-shadow: none !important;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-center">
+  <div class="auth-card" role="form" aria-describedby="login-desc">
+    <div class="accent-bar"></div>
+    <div class="auth-head">
+      <div class="d-flex align-items-center gap-3">
+        <div class="brand-badge">
+          <img src="{{ url_for('static', filename='img/resmedical-symbol.png') }}" alt="Resmedical">
+        </div>
+        <div>
+          <h4 class="head-title mb-0">Resmedical</h4>
+          <div class="head-sub">Sistema de Gestão de Frotas</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="auth-body">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-soft py-2 px-3 mb-3" role="alert">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <div id="login-desc" class="visually-hidden">Área de acesso ao sistema de gestão de frotas Resmedical.</div>
+
+      <form method="POST" action="{{ url_for('login') }}" autocomplete="off" class="needs-validation" novalidate>
+        <div class="form-floating mb-3">
+          <input type="text" class="form-control" id="username" name="username" placeholder="Usuário" required autofocus>
+          <label for="username"><i class="bi bi-person me-2 text-primary"></i>Usuário</label>
+          <div class="invalid-feedback">Informe o usuário.</div>
+        </div>
+
+        <div class="form-floating mb-2 pass-wrap">
+          <input type="password" class="form-control" id="password" name="password" placeholder="Senha" required>
+          <label for="password"><i class="bi bi-lock me-2 text-primary"></i>Senha</label>
+          <button class="toggle-btn" type="button" id="togglePassword" aria-label="Mostrar/ocultar senha">
+            <i class="bi bi-eye"></i>
+          </button>
+          <div class="invalid-feedback">Informe a senha.</div>
+        </div>
+
+        <div id="capsWarning" class="form-text caps-hint mb-3" style="display:none;">
+          <i class="bi bi-exclamation-triangle me-1"></i>Caps Lock ativado.
+        </div>
+
+        <button type="submit" class="btn btn-brand btn-lg w-100">
+          Entrar
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer" role="contentinfo">
+  <div class="inner">
+    <span>Copyright © 2025 Thiago Rufino. Todos os direitos reservados.</span>
+  </div>
+</footer>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // Mostrar/ocultar senha
+  (function() {
+    const btn = document.getElementById('togglePassword');
+    if (!btn) return;
+    btn.addEventListener('click', function() {
+      const input = document.getElementById('password');
+      if (!input) return;
+      const isText = input.type === 'text';
+      input.type = isText ? 'password' : 'text';
+      const icon = this.querySelector('i');
+      if (icon) { icon.classList.toggle('bi-eye'); icon.classList.toggle('bi-eye-slash'); }
+      input.focus();
+    });
+  })();
+
+  // Aviso de Caps Lock
+  (function() {
+    const pass = document.getElementById('password');
+    const warn = document.getElementById('capsWarning');
+    if (!pass || !warn) return;
+    function check(e){ const caps = e.getModifierState && e.getModifierState('CapsLock'); warn.style.display = caps ? 'block' : 'none'; }
+    pass.addEventListener('keyup', check); pass.addEventListener('keydown', check);
+  })();
+
+  // Validação Bootstrap
+  (function () {
+    'use strict';
+    const forms = document.querySelectorAll('.needs-validation');
+    Array.prototype.slice.call(forms).forEach(function (form) {
+      form.addEventListener('submit', function (event) {
+        if (!form.checkValidity()) { event.preventDefault(); event.stopPropagation(); }
+        form.classList.add('was-validated');
+      }, false);
+    });
+  })();
+</script>
+{% endblock %}

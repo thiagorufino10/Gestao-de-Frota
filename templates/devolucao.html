@@ -1,68 +1,130 @@
 {% extends "base.html" %}
 
+{% block extra_head %}
+<style>
+  /* Fundo igual às demais telas */
+  body{
+    background:
+      radial-gradient(1100px 560px at 8% -10%, rgba(43,108,176,.20), transparent 60%),
+      radial-gradient(1000px 520px at 110% 110%, rgba(96,165,250,.16), transparent 60%),
+      linear-gradient(135deg, #0b1220, #0f172a 60%, #0b1220);
+  }
+
+  :root{
+    --rm-navy:#0F2C59;
+    --line:#E6EAF2;
+    --muted:#475569;
+  }
+
+  .card-elev{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:16px;
+    box-shadow:0 14px 40px rgba(0,0,0,.08);
+  }
+
+  .section-head{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:12px; padding-bottom:8px; border-bottom:1px solid var(--line);
+    margin-bottom:14px;
+  }
+  .section-head h2{
+    margin:0; font-weight:800; color:var(--rm-navy);
+    display:flex; align-items:center; gap:.5rem;
+  }
+  .helper{ color:var(--muted); }
+
+  .pill{
+    display:inline-flex; align-items:center; gap:8px;
+    border:1px solid var(--line); border-radius:999px; padding:.35rem .8rem;
+    background:#fff; font-size:.95rem;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card p-4">
-            <h2 class="mb-4 text-center">
-                <i class="bi bi-check-circle text-info me-2"></i>Devolução de Veículo
-            </h2>
+  <div class="col-lg-8">
+    <div class="card-elev p-4">
+      <div class="section-head">
+        <h2><i class="bi bi-check-circle text-info"></i> Devolução de Veículo</h2>
+        <span class="helper">Finalize a utilização registrando a data e o hodômetro de devolução.</span>
+      </div>
 
-            <form method="POST" id="devolucao-form">
-                <div class="mb-3">
-                    <label class="form-label">Veículo:</label>
-                    <input type="text" class="form-control" value="{{ utilizacao.veiculo.marca_modelo }} - {{ utilizacao.veiculo.placa }}" disabled>
-                </div>
-                
-                <div class="mb-3">
-                    <label class="form-label">Usuário:</label>
-                    <input type="text" class="form-control" value="{{ utilizacao.usuario.nome }}" disabled>
-                </div>
+      <!-- Contexto da devolução -->
+      <div class="d-flex flex-wrap gap-2 mb-3">
+        <div class="pill"><i class="bi bi-truck-front"></i> <strong>Veículo:</strong> {{ utilizacao.veiculo.marca_modelo }} — {{ utilizacao.veiculo.placa }}</div>
+        <div class="pill"><i class="bi bi-person-badge"></i> <strong>Condutor:</strong> {{ utilizacao.usuario.nome }}</div>
+        <div class="pill"><i class="bi bi-speedometer2"></i> <strong>KM mínimo aceito:</strong> {{ km_minimo }}</div>
+      </div>
 
-                <div class="mb-3">
-                    <label for="data_devolucao" class="form-label">Data de Devolução:</label>
-                    <input type="date" id="data_devolucao" name="data_devolucao" class="form-control" required>
-                </div>
-
-                <div class="mb-3">
-                    <label for="km_devolucao" class="form-label">KM de Devolução:</label>
-                    <input type="number" id="km_devolucao" name="km_devolucao" class="form-control" required>
-                </div>
-                <input type="hidden" id="km_minimo" value="{{ km_minimo }}">
-
-                <div class="d-flex justify-content-between">
-                    <a href="{{ url_for('controle_utilizacao') }}" class="btn btn-secondary">
-                        <i class="bi bi-arrow-left-circle"></i> Voltar
-                    </a>
-                    <button type="submit" class="btn btn-success">
-                        <i class="bi bi-save-fill"></i> Registrar Devolução
-                    </button>
-                </div>
-            </form>
+      <form method="POST" id="devolucao-form" class="row g-3">
+        <div class="col-12 col-md-6">
+          <label for="data_devolucao" class="form-label">Data de Devolução</label>
+          <input type="date" id="data_devolucao" name="data_devolucao" class="form-control" required>
+          <div class="form-text">Não é permitido registrar uma data futura.</div>
         </div>
+
+        <div class="col-12 col-md-6">
+          <label for="km_devolucao" class="form-label">KM de Devolução</label>
+          <input type="number" id="km_devolucao" name="km_devolucao" class="form-control" required min="{{ km_minimo }}">
+          <div class="form-text">O valor deve ser maior ou igual a {{ km_minimo }}.</div>
+        </div>
+
+        <input type="hidden" id="km_minimo" value="{{ km_minimo }}">
+
+        <div class="col-12 d-flex justify-content-between mt-2">
+          <a href="{{ url_for('controle_utilizacao') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left-circle"></i> Voltar
+          </a>
+          <button type="submit" class="btn btn-success">
+            <i class="bi bi-save-fill"></i> Registrar devolução
+          </button>
+        </div>
+      </form>
     </div>
+  </div>
 </div>
 
+{% endblock %}
+
+{% block extra_scripts %}
 <script>
-    document.getElementById('devolucao-form').addEventListener('submit', function(event) {
-        const dataDevolucao = new Date(document.getElementById('data_devolucao').value);
-        const dataAtual = new Date();
-        dataAtual.setHours(0, 0, 0, 0);
+  (function(){
+    const form = document.getElementById('devolucao-form');
+    const inpData = document.getElementById('data_devolucao');
+    const inpKm   = document.getElementById('km_devolucao');
+    const kmMin   = parseInt(document.getElementById('km_minimo').value, 10) || 0;
 
-        if (dataDevolucao > dataAtual) {
-            alert('A data de devolução não pode ser uma data futura.');
-            event.preventDefault();
-            return;
-        }
+    // Define hoje como valor padrão e máximo permitido
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth()+1).padStart(2,'0');
+    const dd = String(today.getDate()).padStart(2,'0');
+    const todayStr = `${yyyy}-${mm}-${dd}`;
+    inpData.value = todayStr;
+    inpData.max   = todayStr;
 
-        const kmDevolucao = parseInt(document.getElementById('km_devolucao').value);
-        const kmMinimo = parseInt(document.getElementById('km_minimo').value);
+    // Refina min do KM também no atributo (além da validação)
+    inpKm.min = kmMin;
 
-        if (kmDevolucao < kmMinimo) {
-            alert('O KM de devolução não pode ser menor que o último KM registrado (' + kmMinimo + ').');
-            event.preventDefault();
-            return;
-        }
+    form.addEventListener('submit', function(event){
+      // valida data futura
+      const sel = new Date(inpData.value);
+      const now = new Date(yyyy, today.getMonth(), today.getDate()); // zera horas
+      if(sel > now){
+        alert('A data de devolução não pode ser uma data futura.');
+        event.preventDefault();
+        return;
+      }
+      // valida km
+      const kmDev = parseInt(inpKm.value, 10);
+      if(isNaN(kmDev) || kmDev < kmMin){
+        alert('O KM de devolução não pode ser menor que o último KM registrado (' + kmMin + ').');
+        event.preventDefault();
+        return;
+      }
     });
+  })();
 </script>
 {% endblock %}

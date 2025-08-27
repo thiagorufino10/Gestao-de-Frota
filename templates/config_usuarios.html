@@ -1,0 +1,224 @@
+{# templates/config_usuarios.html #}
+{% extends "base.html" %}
+
+{% block extra_head %}
+<style>
+  /* === Fundo igual às demais telas (index, multas, etc.) === */
+  body{
+    background:
+      radial-gradient(1100px 560px at 8% -10%, rgba(43,108,176,.20), transparent 60%),
+      radial-gradient(1000px 520px at 110% 110%, rgba(96,165,250,.16), transparent 60%),
+      linear-gradient(135deg, #0b1220, #0f172a 60%, #0b1220);
+  }
+
+  :root{
+    --rm-navy:#0F2C59;
+    --rm-blue:#2B6CB0;
+    --sky:#60A5FA;
+    --line:#E6EAF2;
+    --muted:#475569;
+  }
+
+  .card-elev{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:16px;
+    box-shadow:0 14px 40px rgba(0,0,0,.08);
+  }
+  .section-head{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:12px; padding-bottom:8px; border-bottom:1px solid var(--line);
+    margin-bottom:14px;
+  }
+  .section-head h2, .section-head h5{
+    margin:0; font-weight:800; color:var(--rm-navy);
+    display:flex; align-items:center; gap:.5rem;
+  }
+  .muted{ color:var(--muted); }
+  .helper{ font-size:.9rem; color:var(--muted); }
+
+  .btn-soft{
+    background:#fff; border:1px solid var(--line);
+  }
+
+  .table thead th{ font-weight:700; color:#0F2C59; border-bottom:1px solid var(--line) !important; }
+  .table tbody td{ vertical-align:middle; }
+
+  .search-wrap{ display:flex; gap:10px; align-items:center; }
+  .search-wrap .form-control{ max-width:320px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-10">
+
+    {# Flash messages (o base já exibe, mas deixo aqui se quiser mover no futuro) #}
+    {# Mantemos apenas o do base.html para evitar duplicidade #}
+
+    <!-- Criar novo usuário -->
+    <div class="card-elev p-4 mb-4">
+      <div class="section-head">
+        <h2><i class="bi bi-person-plus-fill text-primary"></i> Criar novo usuário</h2>
+        <span class="helper">Defina login, senha inicial e permissões.</span>
+      </div>
+
+      <form method="POST" action="{{ url_for('config_usuarios') }}" class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Usuário (login)</label>
+          <input type="text" name="username" class="form-control" required placeholder="ex.: joao.silva" autocomplete="new-username">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Senha inicial</label>
+          <input type="password" name="password" class="form-control" required placeholder="defina uma senha" autocomplete="new-password">
+        </div>
+
+        <div class="col-12">
+          <div class="helper mb-2">Permissões:</div>
+          <div class="d-flex flex-wrap gap-4">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="new_is_admin" name="is_admin">
+              <label class="form-check-label" for="new_is_admin">Administrador (acesso total)</label>
+            </div>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="new_can_edit" name="can_edit" checked>
+              <label class="form-check-label" for="new_can_edit">Pode criar/editar registros</label>
+            </div>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="new_can_delete" name="can_delete">
+              <label class="form-check-label" for="new_can_delete">Pode excluir registros</label>
+            </div>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="new_can_manage_users" name="can_manage_users">
+              <label class="form-check-label" for="new_can_manage_users">Pode gerenciar usuários</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 d-flex justify-content-end">
+          <button class="btn btn-primary">
+            <i class="bi bi-check2-circle"></i> Criar usuário
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Usuários cadastrados -->
+    <div class="card-elev p-4">
+      <div class="section-head">
+        <h2><i class="bi bi-people-fill text-primary"></i> Usuários cadastrados</h2>
+        <div class="search-wrap">
+          <input id="userFilter" type="search" class="form-control form-control-sm" placeholder="Filtrar por usuário...">
+          <span class="badge text-bg-secondary">Total: {{ usuarios|length }}</span>
+        </div>
+      </div>
+
+      {% if usuarios and usuarios|length > 0 %}
+      <div class="table-responsive">
+        <table class="table align-middle" id="usersTable">
+          <thead class="table-light">
+            <tr>
+              <th style="width:22%">Usuário</th>
+              <th style="width:10%">Status</th>
+              <th>Permissões</th>
+              <th class="text-end" style="width:16%">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for u in usuarios %}
+            <tr>
+              <td class="fw-semibold" data-col="user">
+                {{ u.username }}
+                {% if u.is_admin %}
+                  <span class="badge bg-dark ms-1">Admin</span>
+                {% endif %}
+              </td>
+
+              <td>
+                {% if u.active %}
+                  <span class="badge text-bg-success">Ativo</span>
+                {% else %}
+                  <span class="badge text-bg-secondary">Inativo</span>
+                {% endif %}
+              </td>
+
+              <td>
+                <form method="POST" action="{{ url_for('atualizar_permissoes', user_id=u.id) }}"
+                      class="d-flex flex-wrap gap-3 align-items-center">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="is_admin_{{ u.id }}" name="is_admin" {% if u.is_admin %}checked{% endif %}>
+                    <label class="form-check-label" for="is_admin_{{ u.id }}">Admin</label>
+                  </div>
+
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="can_edit_{{ u.id }}" name="can_edit" {% if u.can_edit %}checked{% endif %}>
+                    <label class="form-check-label" for="can_edit_{{ u.id }}">Editar</label>
+                  </div>
+
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="can_delete_{{ u.id }}" name="can_delete" {% if u.can_delete %}checked{% endif %}>
+                    <label class="form-check-label" for="can_delete_{{ u.id }}">Excluir</label>
+                  </div>
+
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="can_manage_users_{{ u.id }}" name="can_manage_users" {% if u.can_manage_users %}checked{% endif %}>
+                    <label class="form-check-label" for="can_manage_users_{{ u.id }}">Gerenciar usuários</label>
+                  </div>
+
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="active_{{ u.id }}" name="active" {% if u.active %}checked{% endif %}>
+                    <label class="form-check-label" for="active_{{ u.id }}">Ativo</label>
+                  </div>
+
+                  <div class="ms-auto">
+                    <button class="btn btn-sm btn-outline-primary" type="submit">
+                      <i class="bi bi-save"></i> Salvar
+                    </button>
+                  </div>
+                </form>
+              </td>
+
+              <td class="text-end">
+                <form method="POST" action="{{ url_for('excluir_usuario_sistema', user_id=u.id) }}" class="d-inline"
+                      onsubmit="return confirm('Excluir o usuário {{ u.username }}?');">
+                  <button class="btn btn-sm btn-outline-danger" type="submit">
+                    <i class="bi bi-trash"></i> Excluir
+                  </button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+        <div class="alert alert-info mb-0">
+          <i class="bi bi-info-circle"></i> Nenhum usuário cadastrado.
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // Filtro rápido por nome de usuário
+  (function(){
+    const input = document.getElementById('userFilter');
+    const rows  = () => Array.from(document.querySelectorAll('#usersTable tbody tr'));
+
+    function getUserCellText(tr){
+      return (tr.querySelector('[data-col="user"]')?.textContent || '').toLowerCase();
+    }
+    input?.addEventListener('input', function(){
+      const term = this.value.trim().toLowerCase();
+      rows().forEach(tr => {
+        const txt = getUserCellText(tr);
+        tr.style.display = (!term || txt.includes(term)) ? '' : 'none';
+      });
+    });
+  })();
+</script>
+{% endblock %}
